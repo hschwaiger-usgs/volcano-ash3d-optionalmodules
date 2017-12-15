@@ -1,0 +1,49 @@
+#!/bin/bash
+
+ASH3DROOT="../../.."
+WRKDIR="${ASH3DROOT}/src"
+ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
+TESTCASE=2
+export TESTCASE
+sub=(0 1 2 3 4)
+# Vertical advection:
+#  subcase 1 : Wind blows up (no fall velocity)
+#  subcase 2 : Wind blows down (no fall velocity)
+#  subcase 3 : No z wind (fall velocity +)
+#  subcase 4 : No z wind (fall velocity -)
+
+nlim_label=(LIM_SB)
+dx=(25000 12500 06250 03125)
+inlim=1  # 4
+idx=3    # 4
+
+submin=1
+submax=2
+
+echo "*********************************************************"
+echo "Running finite-volume cases (DCU)"
+echo "*********************************************************"
+
+for (( is=$submin;is<=$submax;is++))
+do
+ pushd ${WRKDIR}
+ SUBCASE=${sub[is]}
+ export SUBCASE
+ echo $SUBCASE
+ make clean
+ make
+ popd
+ for (( k=0;k<idx;k++))
+ do
+  echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  echo $k ' of ' ${idx}
+  echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  ${ASH3D} TC${TESTCASE}_${dx[k]}.inp
+  mv TC${TESTCASE}_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${dx[k]}_St1_err.dat
+  mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${dx[k]}_St2_err.dat
+  rm 3d_tephra_fall*dat
+  echo "-------------------------------------------------------------------------"
+  echo "-------------------------------------------------------------------------"
+  echo "-------------------------------------------------------------------------"
+ done
+done
