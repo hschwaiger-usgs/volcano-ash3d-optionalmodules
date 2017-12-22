@@ -18,40 +18,49 @@ sub=(0 1 2 3 4 5 6 7 8)
 
 # Current limiter options
 #      LIM_NONE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_SUPERBEE,LIM_MC
-
-nlim=(LIM_SUPERBEE)
-nlim_label=(LIM_SB)
+nlim=(LIM_NONE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_SUPERBEE LIM_MC)
+nlim_label=(LIM_NO LIM_LW LIM_BW LIM_FM LIM_MM LIM_SB LIM_MC)
+#nlim=(LIM_SUPERBEE)
+#nlim_label=(LIM_SB)
 dx=(2000 1000 0500 0250 0125)
 inlim=1  # 4
-idx=3    # 4
+idx=5    # 4
 
-submin=1
+limmin=0 # index of above list starting with 0
+limmax=6
+submin=1 # note the that index 0 is a dummy slot
 submax=8
 
 echo "*********************************************************"
 echo "Running finite-volume cases (DCU)"
 echo "*********************************************************"
 
+mkdir -p DATA
 for (( is=$submin;is<=$submax;is++))
 do
- pushd ${WRKDIR}
- SUBCASE=${sub[is]}
- export SUBCASE
- echo $SUBCASE
- make clean
- make
- popd
- for (( k=0;k<idx;k++))
+ for (( il=$limmin;il<=$limmax;il++))
  do
-  echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  echo $k ' of ' ${idx}
-  echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  ${ASH3D} TC${TESTCASE}_LL_${dx[k]}.inp
-  mv TC${TESTCASE}_LL_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_LL_Sub${SUBCASE}_${dx[k]}_St1_err.dat
-  mv TC${TESTCASE}_LL_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_LL_Sub${SUBCASE}_${dx[k]}_St2_err.dat
-  rm 3d_tephra_fall*dat
-  echo "-------------------------------------------------------------------------"
-  echo "-------------------------------------------------------------------------"
-  echo "-------------------------------------------------------------------------"
+  pushd ${WRKDIR}
+  SUBCASE=${sub[is]}
+  export SUBCASE
+  LIMITER=${nlim[il]}
+  export LIMITER
+  echo $SUBCASE $LIMITER
+  make -f makefile_optmod clean
+  make -f makefile_optmod
+  popd
+  for (( k=0;k<idx;k++))
+  do
+   echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+   echo $k ' of ' ${idx}
+   echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+   ${ASH3D} TC${TESTCASE}_LL_${dx[k]}.inp
+   mv TC${TESTCASE}_LL_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_LL_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_err.dat
+   mv TC${TESTCASE}_LL_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_LL_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
+   rm 3d_tephra_fall*dat
+   echo "-------------------------------------------------------------------------"
+   echo "-------------------------------------------------------------------------"
+   echo "-------------------------------------------------------------------------"
+  done
  done
 done

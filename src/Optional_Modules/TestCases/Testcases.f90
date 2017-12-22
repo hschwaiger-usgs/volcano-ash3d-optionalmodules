@@ -111,6 +111,7 @@
       ZPADDING  = 1.0_ip
 #endif
 #ifdef TESTCASE_3
+      ! Horizontal rotation of block and cone
       TestCase = 3
       useVertAdvect = .false.
       useHorzAdvect = .true.
@@ -118,6 +119,7 @@
       ZPADDING  = 1.0_ip
 #endif
 #ifdef TESTCASE_4
+      ! Diffusion
       TestCase = 4
       useVertAdvect = .false.
       useHorzAdvect = .false.
@@ -125,6 +127,7 @@
       ZPADDING  = 1.0_ip
 #endif
 #ifdef TESTCASE_5
+      ! Horizontal rotational shear
       TestCase = 5
       useVertAdvect = .false.
       useHorzAdvect = .true.
@@ -132,6 +135,7 @@
       ZPADDING  = 1.0_ip
 #endif
 #ifdef TESTCASE_6
+      ! Method of manufactured solutions
       TestCase = 6
       useVertAdvect = .true.
       useHorzAdvect = .true.
@@ -199,11 +203,11 @@
          KM_2_M,MPS_2_KMPHR,PI
 
       use mesh,          only : &
-         IsPeriodic,IsLatLon,nxmax,nymax,nzmax,lon_cc_pd,lat_cc_pd,z_cc_pd,&
+         IsLatLon,nxmax,nymax,nzmax,lon_cc_pd,lat_cc_pd,z_cc_pd,&
          x_cc_pd,y_cc_pd,ZPADDING
 
       use solution,      only : &
-         vx_pd,vy_pd,vz_pd,concen_pd
+         vx_pd,vy_pd,vz_pd
 
       use time_data,     only : &
          time,dt
@@ -451,8 +455,6 @@
                                ve_out,vn_out)
                 vx_pd(i,j,k) = ve_out
                 vy_pd(i,j,k) = vn_out
-
-                !write(global_info,*)gridlon(i),gridlat(j),ve_out,vn_out
               enddo
             enddo
           enddo
@@ -513,7 +515,6 @@
               enddo
             enddo
           enddo
-          !stop 1
         else
           do i=0,nxmax+2
             do j=0,nymax+2
@@ -708,8 +709,6 @@
 
       end subroutine set_LL_wind
 
-
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine DistSource
@@ -733,7 +732,7 @@
       real(kind=ip) :: Const1_1d     = 1.0_ip
       real(kind=ip) :: Const1_2d     = 0.6820926132509800_ip
       !real(kind=ip) :: Const1_3d     = 0.477464829275686_ip
-      !real(kind=ip) :: lon_shifted
+      real(kind=ip) :: lon_shifted
 
       !real(kind=ip) ::  Vs,Vs_p1,Vs_m1,!dws_dz
       !real(kind=ip) ::  kap
@@ -861,59 +860,60 @@
         enddo ! loop over n
       endif
 
-!      if(TestCase.eq.3)then
-!        ! Setting up concentration for 2D cone/box to be advected
-!        ! horizontally
-!        write(global_info,*)"Setting up concentration for TestCase 3"
-!        if(IsLatLon)then
-!        do n=1,nsmax
-!          do k=0,nzmax+2
-!            do j=0,nymax+2
-!              do i=0,nxmax+2
-!                  ! A similar concentration is described in Example 20.1 of
-!                  ! LeVeque's Finite Volume book (p.460)
-!                    ! Set up "square" 16deg x 16deg at lon = 16
-!                lon_shifted = gridlon(i) - 360.0_ip
-!                if ((lon_shifted.lt.24.0_ip).and.(lon_shifted.gt.8.0_ip).and.&
-!                    (gridlat(j).gt.-8.0_ip).and.(gridlat(j).lt.8.0_ip))then
-!                  concen(i,j,k,n,:) = 1.0_ip
-!                else
-!                  concen(i,j,k,n,:) = 0.0_ip
-!                endif
-!                    ! Set up "cone" at lon = -16 with radius of 8deg
-!                r = sqrt((lon_shifted+16.0_ip)**2 + gridlat(j)**2)
-!                if (r .lt. 8.0_ip) then
-!                  concen(i,j,k,n,:) = 1.0_ip - r/8.0_ip
-!                endif
-!              enddo ! loop over i
-!            enddo ! loop over j
-!          enddo ! loop over k
-!        enddo ! loop over n
-!
-!      else
-!        do n=1,nsmax
-!          do k=0,nzmax+2
-!            do j=0,nymax+2
-!              do i=0,nxmax+2
-!                  ! This concentration is described in Example 20.1 of
-!                  ! LeVeque's Finite Volume book (p.460)
-!                if ((x_cc(i).lt.0.6_ip).and.(x_cc(i).gt.0.1_ip).and.      &
-!                    (y_cc(j).gt.-0.25_ip).and.(y_cc(j).lt.0.25_ip)) then
-!                  concen(i,j,k,n,:) = 1.0_ip
-!                else
-!                  concen(i,j,k,n,:) = 0.0_ip
-!                endif
-!                r = sqrt((x_cc(i)+0.45_ip)**2 + y_cc(j)**2)
-!                if (r .lt. 0.35_ip) then
-!                  concen(i,j,k,n,:) = 1.0_ip - r/0.35_ip
-!                endif
-!              enddo ! loop over i
-!            enddo ! loop over j
-!          enddo ! loop over k
-!        enddo ! loop over n
-!      endif
-!      !endif
-!
+      if(TestCase.eq.3)then
+        ! Setting up concentration for 2D cone/box to be advected
+        ! horizontally
+        write(global_info,*)"Setting up concentration for TestCase 3"
+        if(IsLatLon)then
+          ! Lat/lon grid
+          do n=1,nsmax
+            do k=0,nzmax+2
+              do j=0,nymax+2
+                do i=0,nxmax+2
+                    ! A similar concentration is described in Example 20.1 of
+                    ! LeVeque's Finite Volume book (p.460)
+                      ! Set up "square" 16deg x 16deg at lon = 16
+                  lon_shifted = lon_cc_pd(i) - 360.0_ip
+                  if ((lon_shifted.lt.24.0_ip).and.(lon_shifted.gt.8.0_ip).and.&
+                      (lat_cc_pd(j).gt.-8.0_ip).and.(lat_cc_pd(j).lt.8.0_ip))then
+                    concen_pd(i,j,k,n,:) = 1.0_ip
+                  else
+                    concen_pd(i,j,k,n,:) = 0.0_ip
+                  endif
+                      ! Set up "cone" at lon = -16 with radius of 8deg
+                  r = sqrt((lon_shifted+16.0_ip)**2 + lat_cc_pd(j)**2)
+                  if (r .lt. 8.0_ip) then
+                    concen_pd(i,j,k,n,:) = 1.0_ip - r/8.0_ip
+                  endif
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+        else
+          ! This is the projected grid
+          do n=1,nsmax
+            do k=0,nzmax+2
+              do j=0,nymax+2
+                do i=0,nxmax+2
+                    ! This concentration is described in Example 20.1 of
+                    ! LeVeque's Finite Volume book (p.460)
+                  if ((x_cc_pd(i).lt.0.6_ip).and.(x_cc_pd(i).gt.0.1_ip).and.      &
+                      (y_cc_pd(j).gt.-0.25_ip).and.(y_cc_pd(j).lt.0.25_ip)) then
+                    concen_pd(i,j,k,n,:) = 1.0_ip
+                  else
+                    concen_pd(i,j,k,n,:) = 0.0_ip
+                  endif
+                  r = sqrt((x_cc_pd(i)+0.45_ip)**2 + y_cc_pd(j)**2)
+                  if (r .lt. 0.35_ip) then
+                    concen_pd(i,j,k,n,:) = 1.0_ip - r/0.35_ip
+                  endif
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+        endif
+      endif
+
 !      if(TestCase.eq.4)then
 !        ! Setting up halfspace concentration for diffusion testing
 !                !  With diffusivity_horz=12000 and dx=dy=dz=0.5, use dt =
