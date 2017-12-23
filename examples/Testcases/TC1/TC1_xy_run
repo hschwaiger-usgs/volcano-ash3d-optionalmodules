@@ -2,7 +2,8 @@
 
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
-ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
+ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
+#ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
 TESTCASE=1
 export TESTCASE
 sub=(0 1 2 3 4 5 6 7 8)
@@ -23,7 +24,6 @@ nlim_label=(LIM_NO LIM_LW LIM_BW LIM_FM LIM_MM LIM_SB LIM_MC)
 #nlim=(LIM_SUPERBEE)
 #nlim_label=(LIM_SB)
 dx=(50000 25000 12500 06250 03125)
-inlim=1  # 4
 idx=5    # 4
 
 limmin=0 # index of above list starting with 0

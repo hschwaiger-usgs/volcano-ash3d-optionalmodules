@@ -2,7 +2,7 @@
 
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
-ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
+ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
 TESTCASE=3
 export TESTCASE
 
