@@ -5,10 +5,12 @@ TestCase = 3;
 
 % Set this to 1 if you want plots of the solution and errors.
 % Set to 0 if you only want convergence plots and time plots.
-cplotsol  = 1;
+cplotsol  = 0;
 cploterr  = 1;
+cploterr2 = 1;
+cplotmass = 1;
 
-nlim = 1;
+nlim = 7;
 nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
 nres  = char('1000','0500','0250');
 
@@ -30,12 +32,12 @@ cinter = linspace(0.05,0.95,10);
 
 figure(1);
 
-  for inlim = 1:nlimmax
+  for il = 1:nlim
     for inres = 1:nresmax
 
-      ifile = sprintf('DATA_LL/TC%i_LL_%s_%s_%s_sol.dat',  ...
+      ifile = sprintf('DATA_LL/TC%i_LL__%s_%s_sol.dat',  ...
           TestCase,nlim_label(il,:),nres(inres,:));
-      ierfile = sprintf('DATA_LL/TC%i_LL_%s_%s_%s_err.dat',  ...
+      ierfile = sprintf('DATA_LL/TC%i_LL__%s_%s_err.dat',  ...
           TestCase,nlim_label(il,:),nres(inres,:));
       itimefile = sprintf('DATALL/TC%i_LL_%s_%s_etime.dat',  ...
           TestCase,nlim_label(il,:),nres(inres,:));
@@ -48,38 +50,33 @@ figure(1);
       [x y] = meshgrid(x_res,y_res);
 
       % VARIABLES = "true","calc","err"
-      data = load(ifile);
-      truesol = reshape(data(:,1),nx,ny);
-      c       = reshape(data(:,2),nx,ny);
-      err     = reshape(data(:,3),nx,ny);
-      t_tot   = sum(sum(truesol));
-      c_tot   = sum(sum(c));
-      conserv = c_tot/t_tot;
+%      data = load(ifile);
+%      truesol = reshape(data(:,1),nx,ny);
+%      c       = reshape(data(:,2),nx,ny);
+%      err     = reshape(data(:,3),nx,ny);
+%      t_tot   = sum(sum(truesol));
+%      c_tot   = sum(sum(c));
+%      conserv = c_tot/t_tot;
       L1L2errors = load(ierfile);
-      truepeak = max(max(truesol));
+%      truepeak = max(max(truesol));
 
-      GlobL1Errors(inres,inlim,inmeth) = L1L2errors(1);
-      GlobL2Errors(inres,inlim,inmeth) = L1L2errors(2);
-      %GlobalConserv(inres,inlim,inmeth)= conserv;
-      GlobalConserv(inres,inlim,inmeth)= L1L2errors(3);
+      GlobL1Errors(inres,il) = L1L2errors(1);
+      GlobL2Errors(inres,il) = L1L2errors(2);
+      %GlobalConserv(inres,il)= conserv;
+      GlobalConserv(inres,il)= L1L2errors(3);
 
       if (cplotsol == 1)
         if (inres == 1)
           figure(2,'Position',[10 10 1010 810])
         elseif (inres == nresmax)
           figure(1);
-          %subplot(3,4,(inmeth-1)*4+inlim),imagesc(x,y,c);axis xy;axis([xmin xmax ymin ymax]);axis off;
-          subplot(3,4,(inmeth-1)*4+inlim),contour(x,y,c,cinter);axis xy;axis([xmin xmax ymin ymax]);axis nolabel;
+          subplot(3,4,il),contour(x,y,c,cinter);axis xy;axis([xmin xmax ymin ymax]);axis nolabel;
           figure(2);
         end
-        limlab = regexprep(strtrim(nlim(inlim,:)), '_', '=');
-        if inmeth<3
-          limlab = regexprep(strtrim(nlim(inlim,:)), '_', '=');
-          label = sprintf('%s\n%s\ndx = %f\nTotal L_1 Err = %f\nTotal L_2 Err = %f\nMass Cons Fac = %f', ...
-             strtrim(nmeth(inmeth,:)),limlab,dx,L1L2errors(1),L1L2errors(2),conserv);
-        else
-          label = sprintf('%s\nCTU fac = %s\ndx = %f\nTotal L_1 Err = %f\nTotal L_2 Err = %f\nMass Cons Fac = %f', ...
-             strtrim(nmeth(inmeth,:)),strtrim(nfac(inlim,:)),dx,L1L2errors(1),L1L2errors(2),conserv);
+        limlab = regexprep(strtrim(nlim(il,:)), '_', '=');
+        limlab = regexprep(strtrim(nlim(il,:)), '_', '=');
+        %label = sprintf('%s\n%s\ndx = %f\nTotal L_1 Err = %f\nTotal L_2 Err = %f\nMass Cons Fac = %f', ...
+        %   strtrim(nmeth(inmeth,:)),limlab,dx,L1L2errors(1),L1L2errors(2),conserv);
         end
         xlab = -0.5*(xmax-xmin)+xmin;
         ylab =  0.5*(ymax-ymin)+ymin;
@@ -90,21 +87,12 @@ figure(1);
           subplot(4,4,(inres-1)*4+4),imagesc(x,y,abs(err));axis xy;axis([xmin xmax ymin ymax]);title('Abs(Error)');
         end
         if (inres == nresmax)
-          if inmeth<3
-            ofile = sprintf('Solution_LL_%s_%s.png',  ...
-              strtrim(nmeth(inmeth,:)),strtrim(nlim(inlim,:)));
-            ofile2 = sprintf('Solution_LL_%s_%s.eps',  ...
-              strtrim(nmeth(inmeth,:)),strtrim(nlim(inlim,:)));
-          else
-            ofile = sprintf('Solution_LL_%s_%s.png',  ...
-              strtrim(nmeth(inmeth,:)),strtrim(nfac(inlim,:)));
-            ofile2 = sprintf('Solution_LL_%s_%s.eps',  ...
-              strtrim(nmeth(inmeth,:)),strtrim(nfac(inlim,:)));
-          end
+          ofile = sprintf('Solution_LL_%s.png',strtrim(nlim(il,:)));
+          ofile2 = sprintf('Solution_LL_%s.eps',strtrim(nlim(il,:)));
           print(ofile,'-color','-dpng');
           print(ofile2,'-color','-depsc');
           close(2);
-          if (inlim==nlimmax)
+          if (il==nlim)
             figure(1);
             print('LL_compare.eps','-color','-depsc');
           end
@@ -115,11 +103,9 @@ figure(1);
 
     if cplottime==1
       exectimes_raw = load(itimefile);
-      GlobExecTimes(:,inlim,inmeth) = exectimes_raw(:);
+      GlobExecTimes(:,il) = exectimes_raw(:);
     end
 
-  end
-end
 
 close(1);
 

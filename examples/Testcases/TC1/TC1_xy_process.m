@@ -1,6 +1,6 @@
 clear all;
 
-nresmax  = 4;
+nresmax  = 5;
 nres  = char('50000','25000','12500','06250','03125');
 resdx = [0.05000 0.025000 0.012500 0.006250 0.003125];
 subcase = 1;
@@ -15,7 +15,7 @@ subcase = 1;
 %  subcase 8 : x+y-
 
 limmin=1;
-limmax=2;
+limmax=7;
 nlim = limmax-limmin+1;
 nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
 
@@ -56,9 +56,9 @@ Ox=1.0e-1;
 Oy=1.0e-1;
 dxmin=1.0e-3;
 dxmax=1.0e-1;
-L1min=1.0e-3;
+L1min=1.0e-5;
 L1max=1.0e-1;
-L2min=1.0e-2;
+L2min=1.0e-4;
 L2max=1.0e0;
 Ermin=1.0e-16;
 Ermax=1.0e-13;

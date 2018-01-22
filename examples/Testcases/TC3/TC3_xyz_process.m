@@ -5,12 +5,12 @@ TestCase = 3;
 
 % Set this to 1 if you want plots of the solution and errors.
 % Set to 0 if you only want convergence plots and time plots.
-cplotsol  = 1;
+cplotsol  = 0;
 cploterr1 = 1;
 cploterr2 = 1;
 cplotmass = 1;
 
-nlim = 1;
+nlim = 7;
 nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
 nres  = char('50000','25000','12500','06250','03125');
 
@@ -23,7 +23,7 @@ xmax =  1.0;
 ymin = -1.0;
 ymax =  1.0;
 
-nresmax  = 4;
+nresmax  = 5;
 
 GlobL1Errors  = zeros(nresmax,nlim);
 GlobExecTimes = zeros(nresmax,nlim);
@@ -147,6 +147,16 @@ for iplot = 1:3
     if nlim > 3
       subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,4,1),'-+k')
     end
+    if nlim > 4
+      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,5,1),'-+y')
+    end
+    if nlim > 5
+      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,6,1),'-+m')
+    end
+    if nlim > 6
+      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-+c')
+    end
+
     subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-3],'k-')
     subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-5],'k-')
     grid off;
@@ -157,6 +167,7 @@ for iplot = 1:3
     %axis equal;
     hold off;
 
+    % This section is just for the legend
     subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,1,1),'-+r')
     hold on;
     if nlim > 1
@@ -168,9 +179,18 @@ for iplot = 1:3
     if nlim > 3
       subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,4,1),'-+k')
     end
+    if nlim > 4
+      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,5,1),'-+y')
+    end
+    if nlim > 5
+      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,6,1),'-+m')
+    end
+    if nlim > 6
+      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-+c')
+    end
     subplot(3,4,5),loglog([1.0e-1,1.0e-2],[1.0e-2,1.0e-3],'k--')
     subplot(3,4,5),loglog([1.0e-1,1.0e-2],[1.0e-2,1.0e-4],'k:')
-
+    legend('None','Lax-Wen','BeamWarm','Fromm','MinMod','Superbee','MC','O(1)','O(2)','Location','northwest');
     grid on;
     axis([10 11 10 11]);
     axis off;
