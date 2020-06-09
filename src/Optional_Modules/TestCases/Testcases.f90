@@ -713,6 +713,9 @@
 
       subroutine DistSource
 
+      use global_param,  only : &
+         PI
+
       use mesh,          only : &
          nxmax,nymax,nzmax,nsmax,lat_cc_pd,lon_cc_pd,kappa_pd,z_cc_pd,dz_vec_pd,&
          x_cc_pd,y_cc_pd,ts0,IsLatLon,dx,dy
@@ -753,21 +756,21 @@
 
       if(TestCase.eq.1)then
         if(IsLatLon)then
-        ! Setting up concentration for 2D pulse to be advected
-        ! horizontally
-        xpeak = 360.0_ip
-        ypeak = 0.0_ip
-        char_len = 6.0_ip
-        do n=1,nsmax
-          do k=0,nzmax+2
-            do j=0,nymax+2
-              do i=0,nxmax+2
+          ! Setting up concentration for 2D pulse to be advected
+          ! horizontally
+          xpeak = 360.0_ip
+          ypeak = 0.0_ip
+          char_len = 6.0_ip
+          do n=1,nsmax
+            do k=-1,nzmax+2
+              do j=-1,nymax+2
+                do i=-1,nxmax+2
                   ! This is a 2D cubic spline concentration centered at
                   ! 0,0 with a characteristic width of h=0.1 and
                   ! normalized to unit volume
 
-                if ( (abs(lon_cc_pd(i)-xpeak).lt.2.0_ip*char_len) .or.  &
-                     (abs(lat_cc_pd(j)-ypeak).lt.2.0_ip*char_len) ) then
+                  if ( (abs(lon_cc_pd(i)-xpeak).lt.2.0_ip*char_len) .or.  &
+                       (abs(lat_cc_pd(j)-ypeak).lt.2.0_ip*char_len) ) then
 
        Dist = sqrt(  (lon_cc_pd(i)-xpeak)**2.0_ip + (lat_cc_pd(j)-ypeak)**2.0_ip )
        r = Dist/char_len
@@ -781,29 +784,29 @@
          concen_pd(i,j,k,n,:) = fac_1*(2.0_ip/3.0_ip - r*r + 0.5_ip*r*r*r)
        endif
 
-                else
-                  concen_pd(i,j,k,n,:) = 0.0_ip
-                endif
-              enddo ! loop over i
-            enddo ! loop over j
-          enddo ! loop over k
-        enddo ! loop over n
-      else
-        ! Setting up concentration for 2D pulse to be advected
-        ! horizontally
-        xpeak = 0.0_ip
-        ypeak = 0.0_ip
-        char_len = 0.1_ip
-        do n=1,nsmax
-          do k=0,nzmax+2
-            do j=0,nymax+2
-              do i=0,nxmax+2
-                  ! This is a 2D cubic spline concentration centered at
-                  ! 0,0 with a characteristic width of h=0.1 and
-                  ! normalized to unit volume
-
-                if ( (abs(x_cc_pd(i)-xpeak).lt.2.0_ip*char_len) .or.  &
-                     (abs(y_cc_pd(j)-ypeak).lt.2.0_ip*char_len) ) then
+                  else
+                    concen_pd(i,j,k,n,:) = 0.0_ip
+                  endif
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+        else
+          ! Setting up concentration for 2D pulse to be advected
+          ! horizontally
+          xpeak = 0.0_ip
+          ypeak = 0.0_ip
+          char_len = 0.1_ip
+          do n=1,nsmax
+            do k=-1,nzmax+2
+              do j=-1,nymax+2
+                do i=-1,nxmax+2
+                    ! This is a 2D cubic spline concentration centered at
+                    ! 0,0 with a characteristic width of h=0.1 and
+                    ! normalized to unit volume
+  
+                  if ( (abs(x_cc_pd(i)-xpeak).lt.2.0_ip*char_len) .or.  &
+                       (abs(y_cc_pd(j)-ypeak).lt.2.0_ip*char_len) ) then
 
        Dist = sqrt(  (x_cc_pd(i)-xpeak)**2.0_ip + (y_cc_pd(j)-ypeak)**2.0_ip )
        r = Dist/char_len
@@ -817,15 +820,15 @@
          concen_pd(i,j,k,n,:) = fac_1*(2.0_ip/3.0_ip - r*r + 0.5_ip*r*r*r)
        endif
 
-                else
-                  concen_pd(i,j,k,n,:) = 0.0_ip
-                endif
-
-              enddo ! loop over i
-            enddo ! loop over j
-          enddo ! loop over k
-        enddo ! loop over n
-      endif !IsLatLon
+                  else
+                    concen_pd(i,j,k,n,:) = 0.0_ip
+                  endif
+  
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+        endif !IsLatLon
       endif !TestCase.eq.1
 
       if(TestCase.eq.2)then
@@ -867,9 +870,9 @@
         if(IsLatLon)then
           ! Lat/lon grid
           do n=1,nsmax
-            do k=0,nzmax+2
-              do j=0,nymax+2
-                do i=0,nxmax+2
+            do k=-1,nzmax+2
+              do j=-1,nymax+2
+                do i=-1,nxmax+2
                     ! A similar concentration is described in Example 20.1 of
                     ! LeVeque's Finite Volume book (p.460)
                       ! Set up "square" 16deg x 16deg at lon = 16
@@ -892,9 +895,9 @@
         else
           ! This is the projected grid
           do n=1,nsmax
-            do k=0,nzmax+2
-              do j=0,nymax+2
-                do i=0,nxmax+2
+            do k=-1,nzmax+2
+              do j=-1,nymax+2
+                do i=-1,nxmax+2
                     ! This concentration is described in Example 20.1 of
                     ! LeVeque's Finite Volume book (p.460)
                   if ((x_cc_pd(i).lt.0.6_ip).and.(x_cc_pd(i).gt.0.1_ip).and.      &
@@ -912,74 +915,72 @@
             enddo ! loop over k
           enddo ! loop over n
         endif
+      endif ! TestCase.eq.3
+
+      if(TestCase.eq.4)then
+        ! Setting up halfspace concentration for diffusion testing
+                !  With diffusivity_horz=12000 and dx=dy=dz=0.5, use dt =
+                !  5.0e-4_ip
+        write(global_info,*)"Setting up concentration for TestCase 4"
+        concen_pd = 0.0_ip
+        if(SubCase.eq.1.or.SubCase.eq.4)then
+          do i=-1,nxmax+2
+            if(x_cc_pd(i).lt.0.0_ip) &
+              concen_pd(i,:,:,:,:) = 1.0_ip
+          enddo
+        elseif(SubCase.eq.2.or.SubCase.eq.5)then
+          do j=-1,nymax+2
+            if(y_cc_pd(j).lt.0.0_ip) &
+              concen_pd(:,j,:,:,:) = 1.0_ip
+          enddo
+        elseif(SubCase.eq.3.or.SubCase.eq.6)then
+          do k=-1,nzmax+2
+            if(z_cc_pd(k).lt.1.0_ip) &
+              concen_pd(:,:,k,:,:) = 1.0_ip
+          enddo
+        endif
       endif
 
-!      if(TestCase.eq.4)then
-!        ! Setting up halfspace concentration for diffusion testing
-!                !  With diffusivity_horz=12000 and dx=dy=dz=0.5, use dt =
-!                !  5.0e-4_ip
-!        write(global_info,*)"Setting up concentration for TestCase 4"
-!        concen = 0.0_ip
-!        if(SubCase.eq.1.or.SubCase.eq.4)then
-!          do i=0,nxmax+2
-!            if(x_cc(i).lt.0.0_ip) &
-!              concen(i,:,:,:,:) = 1.0_ip
-!          enddo
-!        elseif(SubCase.eq.2.or.SubCase.eq.5)then
-!          do j=0,nymax+2
-!            if(y_cc(j).lt.0.0_ip) &
-!              concen(:,j,:,:,:) = 1.0_ip
-!          enddo
-!        elseif(SubCase.eq.3.or.SubCase.eq.6)then
-!          do k=0,nzmax+2
-!            if(z_cc(k).lt.1.0_ip) &
-!              concen(:,:,k,:,:) = 1.0_ip
-!          enddo
-!        endif
-!      endif
-!
-!      if(TestCase.eq.5)then
-!        ! Setting up concentration pulse for circular shear advection
-!        write(global_info,*)"Setting up concentration for TestCase 5"
-!        if(IsLatLon)then
-!        do n=1,nsmax
-!          do k=0,nzmax+2
-!            do j=0,nymax+2
-!              do i=0,nxmax+2
-!                  ! This concentration is similar to Example 5.4.4 of
-!                  ! Durran's Finite Volume book (p.284)
-!                lon_shifted = gridlon(i) - 360.0_ip
-!                r = sqrt((lon_shifted+16.0_ip)**2.0_ip + &
-!                         (gridlat(j))**2.0_ip) / 16.0_ip
-!                r = min(1.0_ip,r)
-!                concen(i,j,k,n,:) = 0.5_ip*(1.0_ip+cos(PI*r))
-!
-!              enddo ! loop over i
-!            enddo ! loop over j
-!          enddo ! loop over k
-!        enddo ! loop over n
-!
-!      else
-!        ! Setting up concentration pulse for circular shear advection
-!        do n=1,nsmax
-!          do k=0,nzmax+2
-!            do j=0,nymax+2
-!              do i=0,nxmax+2
-!                  ! This concentration is described in Example 5.4.4 of
-!                  ! Durran's Finite Volume book (p.284)
-!                r = 4.0_ip*sqrt((x_cc(i)-0.25_ip)**2.0_ip + &
-!                                (y_cc(j)-0.25_ip)**2.0_ip)
-!                r = min(1.0_ip,r)
-!                concen(i,j,k,n,:) = 0.5_ip*(1.0_ip+cos(PI*r))
-!              enddo ! loop over i
-!            enddo ! loop over j
-!          enddo ! loop over k
-!        enddo ! loop over n
-!        endif
-!      endif
-!
-!      !endif ! itime.eq.1
-!
+      if(TestCase.eq.5)then
+        ! Setting up concentration pulse for circular shear advection
+        write(global_info,*)"Setting up concentration for TestCase 5"
+        if(IsLatLon)then
+          do n=1,nsmax
+            do k=-1,nzmax+2
+              do j=-1,nymax+2
+                do i=-1,nxmax+2
+                    ! This concentration is similar to Example 5.4.4 of
+                    ! Durran's Finite Volume book (p.284)
+                  lon_shifted = lon_cc_pd(i) - 360.0_ip
+                  r = sqrt((lon_shifted+16.0_ip)**2.0_ip + &
+                           (lat_cc_pd(j))**2.0_ip) / 16.0_ip
+                  r = min(1.0_ip,r)
+                  concen_pd(i,j,k,n,:) = 0.5_ip*(1.0_ip+cos(PI*r))
+
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+        else
+          ! Setting up concentration pulse for circular shear advection
+          do n=1,nsmax
+            do k=-1,nzmax+2
+              do j=-1,nymax+2
+                do i=-1,nxmax+2
+                    ! This concentration is described in Example 5.4.4 of
+                    ! Durran's Finite Volume book (p.284)
+                  r = 4.0_ip*sqrt((x_cc_pd(i)-0.25_ip)**2.0_ip + &
+                                  (y_cc_pd(j)-0.25_ip)**2.0_ip)
+                  r = min(1.0_ip,r)
+                  concen_pd(i,j,k,n,:) = 0.5_ip*(1.0_ip+cos(PI*r))
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+        endif
+      endif ! TestCase.eq.5
+
+
 !      if(TestCase.eq.6)then
 !!        ! Setting up MMS
 !        if(IsLatLon)then
