@@ -110,7 +110,7 @@ ascii          #format of ash concentration files                              (
 # If we're reading gridded data there should be iWinNum wind files, each having
 # the format volcano_name_yyyymmddhh_FHhh.win
 *******************************************************************************
-TC1.win
+TC1_LL.win
 *******************************************************************************
 #AIRPORT LOCATION FILE
 #The following lines allow the user to specify whether times of ash arrival
