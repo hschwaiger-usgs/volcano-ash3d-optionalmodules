@@ -1,6 +1,6 @@
 clear all;
 
-nresmax  = 5;
+nresmax  = 3;
 nres  = char('2000','1000','0500','0250','0125');
 resdx = [2.0 1.0 0.5 0.25 0.125];
 subcase = 8;
@@ -18,6 +18,7 @@ limmin=1;
 limmax=7;
 nlim = limmax-limmin+1;
 nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
+nlimLegLabel=char('NO','LW','BW','FM','MM','SB','MC');
 
 GlobL1Errors1=zeros(nresmax,nlim);
 GlobL2Errors1=zeros(nresmax,nlim);
@@ -62,6 +63,8 @@ L2min=1.0e-11;
 L2max=1.0e-7;
 Ermin=1.0e-16;
 Ermax=1.0e-13;
+Ermin=1.0e-16;
+Ermax=1.0e0;
 figure;
 % Interior
 subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--');hold on;
@@ -89,3 +92,4 @@ xlabel('dx')
 subplot(2,3,6),loglog(resdx(1:nresmax),GlobMCErrors2(1:nresmax,:));axis([dxmin dxmax Ermin Ermax]);
 ylabel('MC Error')
 xlabel('dx')
+

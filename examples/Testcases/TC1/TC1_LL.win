@@ -1,0 +1,5 @@
+Input wind file for Ash3d
+12  2       #Wind time (hrs), number of levels of wind
+50  50 1     #x, y Coordinates of wind profile (m)
+0.01  0.0 0
+0.025  0.0 0

@@ -68,7 +68,7 @@ Test                           #Volcano name (character*30)
 *******************************************************************************
 1  1                           #iwind, iwindFormat
 2                              #iHeightHandler
-1.05                             #Simulation time in hours
+1.0                             #Simulation time in hours
 no                 #stop computation when 99% of erupted mass has deposited?
 1                              #nWindFiles, number of gridded wind files (used if iwind>1)
 *******************************************************************************

@@ -1,9 +1,9 @@
 clear all;
 
-nresmax  = 5;
+nresmax  = 3;
 nres  = char('50000','25000','12500','06250','03125');
 resdx = [0.05000 0.025000 0.012500 0.006250 0.003125];
-subcase = 1;
+subcase = 5;
 % Horizontal advection:
 %  subcase 1 : x+y0
 %  subcase 2 : x-y0
@@ -57,9 +57,9 @@ Oy=1.0e-1;
 dxmin=1.0e-3;
 dxmax=1.0e-1;
 L1min=1.0e-5;
-L1max=1.0e-1;
+L1max=1.0e0;
 L2min=1.0e-4;
-L2max=1.0e0;
+L2max=1.0e1;
 Ermin=1.0e-16;
 Ermax=1.0e-13;
 

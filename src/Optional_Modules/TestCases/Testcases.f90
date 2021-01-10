@@ -1194,6 +1194,7 @@
         ! Now account for mass conservation at boundaries
         do n=1,nsmax
           do i=1,nxmax
+            ! Adding bottom and top
             do j=1,nymax
               MassConsError = MassConsError + outflow_xy1_pd(i,j,n)*kappa_pd(i,j,      0) &
                                             + outflow_xy2_pd(i,j,n)*kappa_pd(i,j,nzmax+1)
