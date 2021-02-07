@@ -5,7 +5,7 @@ TestCase = 3;
 
 % Set this to 1 if you want plots of the solution and errors.
 % Set to 0 if you only want convergence plots and time plots.
-cplotsol  = 0;
+cplotsol  = 1;
 cploterr1 = 1;
 cploterr2 = 1;
 cplotmass = 1;
@@ -23,7 +23,7 @@ xmax =  1.0;
 ymin = -1.0;
 ymax =  1.0;
 
-nresmax  = 5;
+nresmax  = 3;
 
 GlobL1Errors  = zeros(nresmax,nlim);
 GlobExecTimes = zeros(nresmax,nlim);
@@ -94,17 +94,17 @@ figure(1);
             nlim_label(il,:));
           %if IsOct == 1
           %  %print(ofile,'-color','-dpng');
-          %  print(ofile2,'-color','-depsc');
+            print(ofile2,'-color','-depsc');
           %else
-            print(2,'-depsc2',ofile2)
+          %  print(2,'-depsc2',ofile2)
           %end
           close(2);
           if (il==nlim)
             figure(1);
             %if IsOct == 1
-            %  print('xyz_compare.eps','-color','-depsc');
+              print('xyz_compare.eps','-color','-depsc');
             %else
-              print(1,'-depsc2','xyz_compare.eps')
+            %  print(1,'-depsc2','xyz_compare.eps')
             %end
           end
         end
@@ -199,11 +199,11 @@ for iplot = 1:3
 
 
     %if IsOct == 1
-    %  print(out_file,'-color','-depsc');
-    %  %close();
+      print(out_file,'-color','-depsc');
+      %close();
     %else
-      print(1,'-depsc2',out_file);
-      close();
+    %  print(1,'-depsc2',out_file);
+    %  close();
     %end
   end
 end

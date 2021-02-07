@@ -21,10 +21,10 @@ sub=(0 1 2 3 4 5 6 7 8)
 #      LIM_NONE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_SUPERBEE,LIM_MC
 nlim=(LIM_NONE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_SUPERBEE LIM_MC)
 nlim_label=(LIM_NO LIM_LW LIM_BW LIM_FM LIM_MM LIM_SB LIM_MC)
-#nlim=(LIM_SUPERBEE)
-#nlim_label=(LIM_SB)
+
+
 dx=(2000 1000 0500 0250 0125)
-idx=3    # 4
+idx=3    # 5
 
 limmin=0 # index of above list starting with 0
 limmax=7

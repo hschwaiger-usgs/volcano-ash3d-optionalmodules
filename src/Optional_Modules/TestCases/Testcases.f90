@@ -416,25 +416,25 @@
         endif
         ! Test case 2 has a wind field SubCase
         if(SubCase.eq.1)then
-            ! Wind blows up (no fall velocity)
-          vx_pd(:,:,:) =  0.0_ip
-          vy_pd(:,:,:) =  0.0_ip
-          vz_pd(:,:,:) =  1.0_ip
+            ! Wind blows + (no fall velocity)
+          vx_pd(:,:,:)  =  0.0_ip
+          vy_pd(:,:,:)  =  0.0_ip
+          vz_pd(:,:,:)  =  1.0_ip
         elseif(SubCase.eq.2)then
-            ! Wind blows down (no fall velocity)
-          vx_pd(:,:,:) =  0.0_ip
-          vy_pd(:,:,:) =  0.0_ip
-          vz_pd(:,:,:) = -1.0_ip
+            ! Wind blows - (no fall velocity)
+          vx_pd(:,:,:)  =  0.0_ip
+          vy_pd(:,:,:)  =  0.0_ip
+          vz_pd(:,:,:)  = -1.0_ip
         elseif(SubCase.eq.3)then
             ! No z wind (fall velocity +)
-          vx_pd(:,:,:) =  0.0_ip
-          vy_pd(:,:,:) =  0.0_ip
-          vz_pd(:,:,:) =  0.0_ip
+          vx_pd(:,:,:)  =  0.0_ip
+          vy_pd(:,:,:)  =  0.0_ip
+          vz_pd(:,:,:)  =  0.0_ip
         elseif(SubCase.eq.4)then
             ! No z wind (fall velocity -)
-          vx_pd(:,:,:) =  0.0_ip
-          vy_pd(:,:,:) =  0.0_ip
-          vz_pd(:,:,:) =  0.0_ip
+          vx_pd(:,:,:)  =  0.0_ip
+          vy_pd(:,:,:)  =  0.0_ip
+          vz_pd(:,:,:)  =  0.0_ip
         endif
       endif
 
@@ -1181,6 +1181,11 @@
                   truesol(i,j) = 0.0_ip
                 endif
 
+                ! Zero nearly zero concentration values since these cause problems
+                ! when written out.
+                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
+                  concen_pd(i,j,k,n,ts1) = 0.0_ip
+                endif
                 err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
 
                 L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
@@ -1213,7 +1218,6 @@
           enddo
         enddo
 
-        !stop 1
         L1_toterror = L1_toterror / (nsmax * TotalVol)
         L2_toterror = L2_toterror /  nsmax
         L2_toterror = sqrt(L2_toterror) / TotalVol
@@ -1297,6 +1301,11 @@
                   truesol(i,j) = 0.0_ip
                 endif
 
+                ! Zero nearly zero concentration values since these cause problems
+                ! when written out.
+                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
+                  concen_pd(i,j,k,n,ts1) = 0.0_ip
+                endif
                 err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
 
                 L1_toterror = L1_toterror + abs(err(i,j))*dx*dy*dz_vec_pd(k)
@@ -1388,6 +1397,11 @@
                   truesolz(k) = 0.0_ip
                 endif
 
+                ! Zero nearly zero concentration values since these cause problems
+                ! when written out.
+                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
+                  concen_pd(i,j,k,n,ts1) = 0.0_ip
+                endif
                 errz(k)=truesolz(k)-concen_pd(10,10,k,1,ts1)
 
                 L1_toterror = L1_toterror + abs(errz(k))*dx*dy*dz_vec_pd(k)
@@ -1465,6 +1479,11 @@
                   truesol(i,j) = 1.0_ip - r/8.0_ip
                 endif
 
+                ! Zero nearly zero concentration values since these cause problems
+                ! when written out.
+                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
+                  concen_pd(i,j,k,n,ts1) = 0.0_ip
+                endif
                 err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
 
                 L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
@@ -1518,6 +1537,11 @@
                   truesol(i,j) = 1.0_ip - r/0.35_ip
                 endif
 
+                ! Zero nearly zero concentration values since these cause problems
+                ! when written out.
+                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
+                  concen_pd(i,j,k,n,ts1) = 0.0_ip
+                endif
                 err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
 
                 L1_toterror = L1_toterror + abs(err(i,j))*dx*dy*dz_vec_pd(k)
@@ -1589,6 +1613,11 @@
                 r = min(1.0_ip,r)
                 truesol(i,j) = 0.5_ip*(1.0_ip+cos(PI*r))
  
+                ! Zero nearly zero concentration values since these cause problems
+                ! when written out.
+                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
+                  concen_pd(i,j,k,n,ts1) = 0.0_ip
+                endif
                 err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
                 
                 L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)

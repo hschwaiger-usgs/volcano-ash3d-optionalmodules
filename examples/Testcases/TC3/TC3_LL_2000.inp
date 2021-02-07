@@ -3,13 +3,13 @@
 #
 #GENERAL SOURCE PARAMETERS. DO NOT DELETE ANY LINES
 *******************************************************************************
-TC1                           # Volcano name (character*30)
-0 0 0.0 90.0 0.933 6367.470   # Proj flags and params
--1.0   -1.0                   # x, y of LL corner of grid (km, or deg. if latlongflag=1)
- 2.0    2.0                   # grid width and height (km, or deg. if latlonflag=1)
- 0.0    0.0                   # vent location         (km, or deg. if latlonflag=1)
- 0.05  0.05                   # DX, DY of grid cells  (km, or deg.)
-0.05                          # DZ of grid cells      (always km)
+TC3                           # Volcano name (character*30)
+1 1 0.0 90.0 0.933 6367.470   # Proj flags and params
+324.0   -36.0                 # x, y of LL corner of grid (km, or deg. if latlongflag=1)
+72.0    72.0                  # grid width and height (km, or deg. if latlonflag=1)
+360.0    0.0                  # vent location         (km, or deg. if latlonflag=1)
+2.0  2.0                      # DX, DY of grid cells  (km, or deg.)
+1.0                           # DZ of grid cells      (always km)
 0.0    4.                     # diffusion coefficient (m2/s), Suzuki constant
 1                             # neruptions, number of eruptions or pulses
 *******************************************************************************
@@ -18,13 +18,13 @@ TC1                           # Volcano name (character*30)
 #Parameters are (1) start time (yyyy mm dd h.hh (UT)); (2) duration (hrs); 
 #               (3) plume height;                      (4) eruped volume (km3)
 *******************************************************************************
-2010 04 14   0.00   1.0     0.05   0.1
+2010 04 14   0.00   1.0     1.0   0.1
 *******************************************************************************
 #WIND OPTIONS
 *******************************************************************************
 1  1                          # iwind, iwindFormat
 2                             # iHeightHandler
-1.5                           # Simulation time in hours
+3.2                           # Simulation time in hours
 no                            # stop computation when 99% of erupted mass has deposited?
 1                             # nWindFiles, number of gridded wind files (used if iwind>1)
 *******************************************************************************
@@ -44,14 +44,14 @@ no             # Write ASCII file of deposit arrival times?
 no             # Write KML file of deposit arrival times?
 no             # write ASCII file of cloud arrival times?
 no             # Write KML file of cloud arrival times?
-yes            # Print out 3-D ash concentration at specified times?                (Write3dFiles) 
+yes            # Print out 3-D ash concentration at specified times?                (Write3dFiles)                
 ascii          # format of ash concentration files                              ('ascii', 'binary', or 'netcdf')
 2              # nWriteTimes
-0.5 1.0        # WriteTimes (hours since eruption start)
+0.0 3.141592653589793  # WriteTimes (hours since eruption start)
 *******************************************************************************
 #WIND INPUT FILES
 *******************************************************************************
-TC1_xy.win
+TC3_LL.win
 *******************************************************************************
 #AIRPORT LOCATION FILE
 *******************************************************************************
