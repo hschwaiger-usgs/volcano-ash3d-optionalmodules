@@ -16,36 +16,25 @@ subcase = 5;
 %  subcase 7 : x-y+
 %  subcase 8 : x+y-
 
-limmin=1;
-limmax=1;
-nlim = limmax-limmin+1;
-nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
+nlim_label = char('LIM_NO','LIM_SB','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_MC');
 
-%for ilim = limmin:limmax
- %for inres = 1:nresmax
+ilim=7;
+inres=nresmax;
 
-  ilim=7;
-  inres=nresmax;
+dx = resdx(inres);
+x=linspace(-1,1,nx(inres));
+y=linspace(-1,1,ny(inres));
+step = 1;
+isolfile1 = sprintf('DATA/TC1_XY_Sub%i_%s_%s_St%i_sol.dat',  ...
+              subcase,strtrim(nlim_label(ilim,:)),strtrim(nres(inres,:)),step);
+sol1raw = load(isolfile1);
+dat1=reshape(sol1raw(:,2),nx(inres),ny(inres));
 
-  dx = resdx(inres);
-  x=linspace(-1,1,nx(inres));
-  y=linspace(-1,1,ny(inres));
-  step = 1;
-  isolfile1 = sprintf('DATA/TC1_XY_Sub%i_%s_%s_St%i_sol.dat',  ...
-                subcase,strtrim(nlim_label(ilim,:)),strtrim(nres(inres,:)),step);
+step = 2;
+isolfile2 = sprintf('DATA/TC1_XY_Sub%i_%s_%s_St%i_sol.dat',  ...
+              subcase,strtrim(nlim_label(ilim,:)),strtrim(nres(inres,:)),step);
+sol2raw = load(isolfile2);
+dat2=reshape(sol2raw(:,2),nx(inres),ny(inres));
 
-  sol1raw = load(isolfile1);
-  dat1=reshape(sol1raw(:,2),nx(inres),ny(inres));
-
-  step = 2;
-  isolfile2 = sprintf('DATA/TC1_XY_Sub%i_%s_%s_St%i_sol.dat',  ...
-                subcase,strtrim(nlim_label(ilim,:)),strtrim(nres(inres,:)),step);
-
-  sol2raw = load(isolfile2);
-  dat2=reshape(sol2raw(:,2),nx(inres),ny(inres));
-  subplot(1,2,1),contour(x,y,dat1);axis square
-  subplot(1,2,2),contour(x,y,dat2);axis square
-
- %end
-%end
-
+subplot(1,2,1),contour(x,y,dat1);axis square
+subplot(1,2,2),contour(x,y,dat2);axis square

@@ -10,7 +10,7 @@ cploterr1 = 1;
 cploterr2 = 1;
 cplotmass = 1;
 
-nlim = 7;
+nlim = 1;
 nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
 nres  = char('50000','25000','12500','06250','03125');
 
@@ -23,7 +23,7 @@ xmax =  1.0;
 ymin = -1.0;
 ymax =  1.0;
 
-nresmax  = 5;
+nresmax  = 3;
 
 GlobL1Errors  = zeros(nresmax,nlim);
 GlobExecTimes = zeros(nresmax,nlim);
@@ -88,23 +88,23 @@ figure(1);
         subplot(nresmax,4,(inres-1)*4+4),imagesc(x,y,abs(err));axis xy;axis([xmin xmax ymin ymax]);title('Abs(Error)');
 
         if (inres == nresmax)
-          ofile = sprintf('Solution_%s.png',  ...
+          ofile = sprintf('PLOTS/Solution_%s.png',  ...
             nlim_label(il,:));
-          ofile2 = sprintf('Solution_%s.eps',  ...
+          ofile2 = sprintf('PLOTS/Solution_%s.eps',  ...
             nlim_label(il,:));
           %if IsOct == 1
           %  %print(ofile,'-color','-dpng');
-          %  print(ofile2,'-color','-depsc');
+            print(ofile2,'-color','-depsc');
           %else
-            print(2,'-depsc2',ofile2)
+          %  print(2,'-depsc2',ofile2)
           %end
           close(2);
           if (il==nlim)
             figure(1);
             %if IsOct == 1
-            %  print('xyz_compare.eps','-color','-depsc');
+              print('PLOTS/xyz_compare.eps','-color','-depsc');
             %else
-              print(1,'-depsc2','xyz_compare.eps')
+            %  print(1,'-depsc2','xyz_compare.eps')
             %end
           end
         end
@@ -199,11 +199,11 @@ for iplot = 1:3
 
 
     %if IsOct == 1
-    %  print(out_file,'-color','-depsc');
-    %  %close();
+      print(out_file,'-color','-depsc');
+      %close();
     %else
-      print(1,'-depsc2',out_file);
-      close();
+    %  print(1,'-depsc2',out_file);
+    %  close();
     %end
   end
 end

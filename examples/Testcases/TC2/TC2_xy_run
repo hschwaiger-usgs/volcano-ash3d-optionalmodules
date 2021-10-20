@@ -3,6 +3,7 @@
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
 ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
+#ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
 TESTCASE=2
 export TESTCASE
 sub=(0 1 2 3 4)
@@ -13,15 +14,15 @@ sub=(0 1 2 3 4)
 #  subcase 4 : No z wind (fall velocity -)
 
 # Current limiter options
-#      LIM_NONE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_SUPERBEE,LIM_MC
-nlim=(LIM_NONE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_SUPERBEE LIM_MC)
-nlim_label=(LIM_NO LIM_LW LIM_BW LIM_FM LIM_MM LIM_SB LIM_MC)
+#      LIM_NONE,LIM_SUPERBEE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_MC
+nlim=(LIM_NONE LIM_SUPERBEE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_MC)
+nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
 #nlim_label=(LIM_SB)
 dx=(25000 12500 06250 03125)
-idx=4    # 4
+idx=3    # 4 (should take 20 minutes for 4)
 
 limmin=0 # index of above list starting with 0
-limmax=6
+limmax=2
 submin=1
 submax=4
 
@@ -41,7 +42,7 @@ do
   export LIMITER
   echo $SUBCASE $LIMITER
   make -f makefile_optmod clean
-  make -f makefile_optmod 
+  make -f makefile_optmod
   popd
   for (( k=0;k<idx;k++))
   do
@@ -49,9 +50,15 @@ do
    echo $k ' of ' ${idx}
    echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
    ${ASH3D} TC${TESTCASE}_${dx[k]}.inp
-   mv TC${TESTCASE}_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_err.dat
-   mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
-   rm 3d_tephra_fall*dat
+   status=$?
+   if [ $status -ne 0 ]; then
+      echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
+      exit
+    else
+      mv TC${TESTCASE}_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_err.dat
+      mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
+      rm 3d_tephra_fall*dat
+   fi
    echo "-------------------------------------------------------------------------"
    echo "-------------------------------------------------------------------------"
    echo "-------------------------------------------------------------------------"

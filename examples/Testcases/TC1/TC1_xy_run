@@ -6,6 +6,8 @@ ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
 #ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
 TESTCASE=1
 export TESTCASE
+ASH3DCFL=0.99
+export ASH3DCFL
 sub=(0 1 2 3 4 5 6 7 8)
 # Horizontal advection:
 #  subcase 1 : x+y0
@@ -18,18 +20,27 @@ sub=(0 1 2 3 4 5 6 7 8)
 #  subcase 8 : x+y-
 
 # Current limiter options
-#      LIM_NONE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_SUPERBEE,LIM_MC
-nlim=(LIM_NONE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_SUPERBEE LIM_MC)
-nlim_label=(LIM_NO LIM_LW LIM_BW LIM_FM LIM_MM LIM_SB LIM_MC)
+#      LIM_NONE,LIM_SUPERBEE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_MC
+nlim=(LIM_NONE LIM_SUPERBEE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_MC)
+nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
 #nlim=(LIM_SUPERBEE)
 #nlim_label=(LIM_SB)
 dx=(50000 25000 12500 06250 03125)
-idx=3    # 4
+idx=3    # Approximate duration (minutes) for 7 and 2 limiters, respectively
+         #  1 :     :  
+         #  2 :     ; 
+         #  3 :  16 ; 
+         #  4 :     ; 
+         #  5 : 
 
 limmin=0 # index of above list starting with 0
-limmax=7
+limmax=1
 submin=1 # note the that index 0 is a dummy slot
 submax=8
+
+echo "$idx" > TC1_XY_idx.dat
+echo "$limmin $limmax" > TC1_XY_lim.dat
+echo "$submin $submax" > TC1_XY_sub.dat
 
 echo "*********************************************************"
 echo "Running finite-volume cases (DCU)"
@@ -54,12 +65,18 @@ do
    echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
    echo $k ' of ' ${idx}
    echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-   ${ASH3D} TC${TESTCASE}_xy_${dx[k]}.inp
-   mv TC${TESTCASE}_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_err.dat
-   mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
-   mv TC${TESTCASE}_Sub${SUBCASE}_St1_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_sol.dat
-   mv TC${TESTCASE}_Sub${SUBCASE}_St2_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_sol.dat
-   rm 3d_tephra_fall*dat
+   ${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp
+   status=$?
+   if [ $status -ne 0 ]; then
+      echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
+      exit
+    else
+      mv TC${TESTCASE}_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_err.dat
+      mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
+      mv TC${TESTCASE}_Sub${SUBCASE}_St1_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_sol.dat
+      mv TC${TESTCASE}_Sub${SUBCASE}_St2_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_sol.dat
+      rm 3d_tephra_fall*dat
+   fi
    echo "-------------------------------------------------------------------------"
    echo "-------------------------------------------------------------------------"
    echo "-------------------------------------------------------------------------"

@@ -25,7 +25,7 @@
 #           north   -- flag indication norther (1) or southern (0) hemisphere
 *******************************************************************************
 TC2                           #Volcano name (character*30)
-0 1 0.0 90.0 0.933 6367.470    #Proj flags and params
+0 0 0.0 90.0 0.933 6367.470    #Proj flags and params
 -0.25   -0.25                #x, y of LL corner of grid (km, or deg. if latlongflag=1)
  0.5    0.5                #grid width and height (km, or deg. if latlonflag=1)
  0.0    0.0                #vent location         (km, or deg. if latlonflag=1)

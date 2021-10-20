@@ -1,1 +1,1 @@
-rm 3d_tephra_fall.nc Ash3d.lst progress.txt TC1_*sol.dat
+rm 3d_tephra_* Ash3d.lst progress.txt TC*sol.dat

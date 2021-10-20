@@ -11,6 +11,11 @@
       logical :: fullASCIIOutput
       integer :: SubCase
 
+      real(kind=ip) :: TC4_conc_1 = 1.0_ip  ! in kg/km3
+      real(kind=ip) :: TC4_conc_2 = 0.0_ip  ! in kg/km3
+      real(kind=ip) :: TC4_k_1 = 100.0_ip   ! in m2/s
+      real(kind=ip) :: TC4_k_2 = 50.0_ip   ! in m2/s
+
       !real(kind=ip) :: MMS_eta0      = 1.72e-5_ip   ! Ref visc (Pa s)
       !real(kind=ip) :: MMS_suthcons  = 117.0_ip     ! Sutherland Constant (K)
       !real(kind=ip) :: MMS_suthtref  = 273.0_ip     ! Sutherland Ref
@@ -58,7 +63,7 @@
       subroutine set_TestCase_globvars
 
       use global_param,  only : &
-         useVertAdvect,useHorzAdvect
+         useVertAdvect,useHorzAdvect,DT_MIN,DT_MAX,KM2_2_M2,HR_2_S
 
       use mesh,          only : &
         ZPADDING
@@ -125,6 +130,9 @@
       useHorzAdvect = .false.
       fullASCIIOutput = .true.
       ZPADDING  = 1.0_ip
+      TC4_k_1 = TC4_k_1 * HR_2_S/KM2_2_M2 ! in km^2/hr
+      TC4_k_2 = TC4_k_2 * HR_2_S/KM2_2_M2 ! in km^2/hr
+      ! more setting below after subcase setting
 #endif
 #ifdef TESTCASE_5
       ! Horizontal rotational shear
@@ -185,6 +193,16 @@
       SubCase = 8
 #endif
 
+#ifdef TESTCASE_4
+      ! Diffusion
+      if (SubCase.gt.3)then
+        ! For CN integrations with no advection, we need to specify the
+        ! time step explicitly
+        DT_MIN    = 1.0e-5_ip
+        DT_MAX    = 1.0e-5_ip
+      endif
+#endif
+
       write(global_info,*)"       TestCase = ",TestCase
       write(global_info,*)"        SubCase = ",SubCase
       write(global_info,*)"  useVertAdvect = ",useVertAdvect
@@ -207,7 +225,7 @@
          x_cc_pd,y_cc_pd,ZPADDING
 
       use solution,      only : &
-         vx_pd,vy_pd,vz_pd
+         vx_pd,vy_pd,vz_pd,vf_pd
 
       use time_data,     only : &
          time,dt
@@ -233,9 +251,9 @@
             ! Set pole of rotation to north pole
             lon_pole = 0.0_ip
             lat_pole = 90.0_ip
-            do i=0,nxmax+2
-              do j=0,nymax+2
-                do k=0,nzmax+2
+            do i=-1,nxmax+2
+              do j=-1,nymax+2
+                do k=-1,nzmax+2
                   call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                    lon_pole,lat_pole,omega,        &
                                  ve_out,vn_out)
@@ -255,9 +273,9 @@
             ! Set pole of rotation to south pole
             lon_pole =  0.0_ip
             lat_pole = -90.0_ip
-            do i=0,nxmax+2
-              do j=0,nymax+2
-                do k=0,nzmax+2
+            do i=-1,nxmax+2
+              do j=-1,nymax+2
+                do k=-1,nzmax+2
                   call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                    lon_pole,lat_pole,omega,        &
                                  ve_out,vn_out)
@@ -277,9 +295,9 @@
             ! Set pole of rotation to the Galapagos
             lon_pole = -90.0_ip
             lat_pole =  0.0_ip
-            do i=0,nxmax+2
-              do j=0,nymax+2
-                do k=0,nzmax+2
+            do i=-1,nxmax+2
+              do j=-1,nymax+2
+                do k=-1,nzmax+2
                   call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                    lon_pole,lat_pole,omega,        &
                                  ve_out,vn_out)
@@ -299,9 +317,9 @@
             ! Set pole of rotation to the eastern Indian Ocean
             lon_pole = 90.0_ip
             lat_pole =  0.0_ip
-            do i=0,nxmax+2
-              do j=0,nymax+2
-                do k=0,nzmax+2
+            do i=-1,nxmax+2
+              do j=-1,nymax+2
+                do k=-1,nzmax+2
                   call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                    lon_pole,lat_pole,omega,        &
                                  ve_out,vn_out)
@@ -320,9 +338,9 @@
             ! Set pole of rotation to the Athen, Wisconsin
             lon_pole = -90.0_ip
             lat_pole =  45.0_ip
-            do i=0,nxmax+2
-              do j=0,nymax+2
-                do k=0,nzmax+2
+            do i=-1,nxmax+2
+              do j=-1,nymax+2
+                do k=-1,nzmax+2
                   call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                    lon_pole,lat_pole,omega,        &
                                  ve_out,vn_out)
@@ -343,9 +361,9 @@
             ! Set pole of rotation to the southeast Austrailia/Antarctic Ocean
             lon_pole = 90.0_ip
             lat_pole = -45.0_ip
-            do i=0,nxmax+2
-              do j=0,nymax+2
-                do k=0,nzmax+2
+            do i=-1,nxmax+2
+              do j=-1,nymax+2
+                do k=-1,nzmax+2
                   call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                    lon_pole,lat_pole,omega,        &
                                  ve_out,vn_out)
@@ -365,9 +383,9 @@
             ! Set pole of rotation to west of Chile
             lon_pole = -90.0_ip
             lat_pole = -45.0_ip
-            do i=0,nxmax+2
-              do j=0,nymax+2
-                do k=0,nzmax+2
+            do i=-1,nxmax+2
+              do j=-1,nymax+2
+                do k=-1,nzmax+2
                   call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                    lon_pole,lat_pole,omega,        &
                                  ve_out,vn_out)
@@ -387,9 +405,9 @@
             ! Set pole of rotation to the Gobi desert
             lon_pole =  90.0_ip
             lat_pole =  45.0_ip
-            do i=0,nxmax+2
-              do j=0,nymax+2
-                do k=0,nzmax+2
+            do i=-1,nxmax+2
+              do j=-1,nymax+2
+                do k=-1,nzmax+2
                   call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                    lon_pole,lat_pole,omega,        &
                                  ve_out,vn_out)
@@ -420,21 +438,25 @@
           vx_pd(:,:,:) =  0.0_ip
           vy_pd(:,:,:) =  0.0_ip
           vz_pd(:,:,:) =  1.0_ip
+          vf_pd(:,:,:,:) =  0.0_ip
         elseif(SubCase.eq.2)then
             ! Wind blows down (no fall velocity)
           vx_pd(:,:,:) =  0.0_ip
           vy_pd(:,:,:) =  0.0_ip
           vz_pd(:,:,:) = -1.0_ip
+          vf_pd(:,:,:,:) =  0.0_ip
         elseif(SubCase.eq.3)then
             ! No z wind (fall velocity +)
           vx_pd(:,:,:) =  0.0_ip
           vy_pd(:,:,:) =  0.0_ip
           vz_pd(:,:,:) =  0.0_ip
+          vf_pd(:,:,:,:) =  1.0_ip
         elseif(SubCase.eq.4)then
             ! No z wind (fall velocity -)
           vx_pd(:,:,:) =  0.0_ip
           vy_pd(:,:,:) =  0.0_ip
           vz_pd(:,:,:) =  0.0_ip
+          vf_pd(:,:,:,:) =  -1.0_ip
         endif
       endif
 
@@ -447,9 +469,9 @@
              ! Set pole of rotation to middle of domain 
           lon_pole = 360.0_ip
           lat_pole = 0.0_ip
-          do i=0,nxmax+2
-            do j=0,nymax+2
-              do k=0,nzmax+2
+          do i=-1,nxmax+2
+            do j=-1,nymax+2
+              do k=-1,nzmax+2
                 call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                  lon_pole,lat_pole,omega,        &
                                ve_out,vn_out)
@@ -459,8 +481,8 @@
             enddo
           enddo
         else
-          do i=0,nxmax+2
-            do j=0,nymax+2
+          do i=-1,nxmax+2
+            do j=-1,nymax+2
                 ! cartesian grid
               vx_pd(i,j,:) = 40.0_ip * ( y_cc_pd(j))/500.0_ip
               vy_pd(i,j,:) = 40.0_ip * (-x_cc_pd(i))/500.0_ip
@@ -486,9 +508,9 @@
              ! Set pole of rotation to middle of domain 
           lon_pole = 360.0_ip
           lat_pole = 0.0_ip
-          do i=0,nxmax+2
-            do j=0,nymax+2
-              do k=0,nzmax+2
+          do i=-1,nxmax+2
+            do j=-1,nymax+2
+              do k=-1,nzmax+2
                 ! Omega is a function of the distance from the pole of
                 ! rotation
                 dist = sqrt((lon_cc_pd(i)-lon_pole)**2.0_ip + &
@@ -516,8 +538,8 @@
             enddo
           enddo
         else
-          do i=0,nxmax+2
-            do j=0,nymax+2
+          do i=-1,nxmax+2
+            do j=-1,nymax+2
                 ! cartesian grid
               fac1 = (sin(PI*x_cc_pd(i))**2.0_ip) * &
                      (sin(2.0_ip*PI*y_cc_pd(j)))
@@ -543,7 +565,7 @@
             vx_pd = 0.0_ip
           endif
           ! Vy only varies in z
-          do k=0,nzmax+2
+          do k=-1,nzmax+2
             zcc = z_cc_pd(k) * KM_2_M
             if(MMS_USE_Y)then
               vy_pd(:,:,k) = MMS_V0 * 0.5_ip * (1.0_ip + tanh(zcc-MMS_ztrop))
@@ -551,9 +573,9 @@
               vy_pd = 0.0_ip
             endif
           enddo
-          do i=0,nxmax+2
+          do i=-1,nxmax+2
             xcc = x_cc_pd(i) * KM_2_M
-            do j=0,nymax+2
+            do j=-1,nymax+2
               ycc = y_cc_pd(j) * KM_2_M
               ! z-velocity in m/s
               if(MMS_USE_Z)then
@@ -723,6 +745,9 @@
       use solution,      only : &
          concen_pd
 
+      use Diffusion,     only : &
+         kx,ky,kz
+
       implicit none
 
       integer :: i,j,k,n
@@ -838,7 +863,7 @@
         zpeak = 1.0_ip
         char_len = 0.1
         do n=1,nsmax
-          do k=0,nzmax+2
+          do k=-1,nzmax+2
                   ! This is a 1D cubic spline concentration centered at
                   ! 0,0 with a characteristic width of h=0.1 and
                   ! normalized to unit volume
@@ -922,21 +947,44 @@
                 !  With diffusivity_horz=12000 and dx=dy=dz=0.5, use dt =
                 !  5.0e-4_ip
         write(global_info,*)"Setting up concentration for TestCase 4"
-        concen_pd = 0.0_ip
         if(SubCase.eq.1.or.SubCase.eq.4)then
-          do i=-1,nxmax+2
-            if(x_cc_pd(i).lt.0.0_ip) &
-              concen_pd(i,:,:,:,:) = 1.0_ip
+          concen_pd = 0.0_ip
+          ky = 0.0_ip
+          kz = 0.0_ip
+          do i=1,nxmax
+            if(x_cc_pd(i).lt.1.0_ip) then
+              concen_pd(i,:,:,:,:) = TC4_conc_1
+              kx(i,:,:) = TC4_k_1
+            else
+              concen_pd(i,:,:,:,:) = TC4_conc_2
+              kx(i,:,:) = TC4_k_2
+            endif
           enddo
         elseif(SubCase.eq.2.or.SubCase.eq.5)then
-          do j=-1,nymax+2
-            if(y_cc_pd(j).lt.0.0_ip) &
-              concen_pd(:,j,:,:,:) = 1.0_ip
+          concen_pd = 0.0_ip
+          kx = 0.0_ip
+          kz = 0.0_ip
+          do j=1,nymax
+            if(y_cc_pd(j).lt.1.0_ip) then
+              concen_pd(:,j,:,:,:) = TC4_conc_1
+              ky(:,j,:) = TC4_k_1
+            else
+              concen_pd(:,j,:,:,:) = TC4_conc_2
+              ky(:,j,:) = TC4_k_2
+            endif
           enddo
         elseif(SubCase.eq.3.or.SubCase.eq.6)then
-          do k=-1,nzmax+2
-            if(z_cc_pd(k).lt.1.0_ip) &
-              concen_pd(:,:,k,:,:) = 1.0_ip
+          concen_pd = 0.0_ip
+          kx = 0.0_ip
+          ky = 0.0_ip
+          do k=1,nzmax
+            if(z_cc_pd(k).lt.1.0_ip) then
+              concen_pd(:,:,k,:,:) = TC4_conc_1
+              kz(:,:,k) = TC4_k_1
+            else
+              concen_pd(:,:,k,:,:) = TC4_conc_2
+              kz(:,:,k) = TC4_k_2
+            endif
           enddo
         endif
       endif
@@ -998,7 +1046,7 @@
 !               ! Set up initial distribution
 !               if(itime.eq.0)then
 !                 init_sol = MMS_TrueSol(x_cc(i),y_cc(j),z_cc(k),time)
-!                 concen(i,j,k,n,ts0) = init_sol
+!                 concen_pd(i,j,k,n,ts0) = init_sol
 !               endif
 !
 !            ! Get approximate z derivative of vertical velocities
@@ -1008,15 +1056,15 @@
 !                                 vx(i,j,k),vy(i,j,k),vz(i,j,k),Vs, &
 !                                 dws_dz)
 !
-!            concen(i,j,k,n,ts1) =  concen(i,j,k,n,ts0) + dt*mms_src 
+!            concen_pd(i,j,k,n,ts1) =  concen_pd(i,j,k,n,ts0) + dt*mms_src 
 !
 !              enddo ! loop over i
 !            enddo ! loop over j
 !          enddo ! loop over k
 !        enddo ! loop over n
 !         ! copy q-star slice back to q
-!        concen(1:nxmax,1:nymax,1:nzmax,:,ts0) = &
-!          concen(1:nxmax,1:nymax,1:nzmax,:,ts1)
+!        concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts0) = &
+!          concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts1)
 !
 !        endif
 !      endif
@@ -1061,6 +1109,7 @@
       implicit none
 
       integer :: i,j,k,n
+      integer :: lx,ly,lz
       real(kind=ip) :: r
 
       real(kind=ip) :: xpeak,ypeak,zpeak
@@ -1070,6 +1119,10 @@
       real(kind=ip) :: Const1_1d     = 1.0_ip
       real(kind=ip) :: Const1_2d     = 0.6820926132509800_ip
       !real(kind=ip) :: Const1_3d     = 0.477464829275686_ip
+      real(kind=ip) :: tsol
+      real(kind=ip),dimension(nxmax)       :: tsolx
+      real(kind=ip),dimension(nymax)       :: tsoly
+      real(kind=ip),dimension(nzmax)       :: tsolz
       real(kind=ip),dimension(nxmax,nymax) :: err,truesol
       real(kind=ip),dimension(nzmax)       :: errz,truesolz
       real(kind=ip),dimension(nxmax,nymax,nzmax) :: err3D
@@ -1084,9 +1137,10 @@
 
       real(kind=ip) :: MassConsError
       real(kind=ip) :: TotalVol
+      real(kind=ip) :: coeff,coeff2,eta1,eta2
+      real(kind=ip) :: kappa1,kappa2,xm,ym,zm,Tc
 
       !real(kind=ip) :: MMS_TrueSol
-      real(kind=ip) :: tsol
 
       !Note: concentrations should just be set for concen(:,:,:,:,ts0),
       !but this seems to cause problems with the semi-lagrange routine
@@ -1096,50 +1150,48 @@
       MassConsError = 0.0_ip
       TotalVol    = 0.0_ip
 
-      do n=1,nsmax
-        do k=1,nzmax
-          do j=1,nymax
-            do i=1,nxmax
-              if(IsLatLon)then
-                TotalVol = TotalVol + kappa_pd(i,j,k)
-              else
-                TotalVol = TotalVol + dx*dy*dz_vec_pd(k)
-              ENDIf
-            enddo ! loop over i
-          enddo ! loop over j
-        enddo ! loop over k
-      enddo ! loop over n
+      do k=1,nzmax
+        do j=1,nymax
+          do i=1,nxmax
+            !if(IsLatLon)then
+              TotalVol = TotalVol + kappa_pd(i,j,k)
+            !else
+            !  TotalVol = TotalVol + dx*dy*dz_vec_pd(k)
+            !ENDIf
+          enddo ! loop over i
+        enddo ! loop over j
+      enddo ! loop over k
 
       if(TestCase.eq.1)then
         if(IsLatLon)then
           ! To compare with the true solution, we'll back-rotate each
           ! cell-center point and to the original position and calculate
-          ! the coorect concentration from the original profile.
+          ! the correct concentration from the original profile.
           ! Each subcase has a different pole of rotations.
           if(SubCase.eq.1)then
-            lon_pole = 0.0
-            lat_pole = 90.0
+            lon_pole = 0.0_ip
+            lat_pole = 90.0_ip
           elseif(SubCase.eq.2)then
-            lon_pole =  0.0
-            lat_pole = -90.0
+            lon_pole =  0.0_ip
+            lat_pole = -90.0_ip
           elseif(SubCase.eq.3)then
-            lon_pole = -90.0
-            lat_pole =  0.0
+            lon_pole = -90.0_ip
+            lat_pole =  0.0_ip
           elseif(SubCase.eq.4)then
-            lon_pole = 90.0
-            lat_pole =  0.0
+             lon_pole = 90.0_ip
+             lat_pole =  0.0_ip
           elseif(SubCase.eq.5)then
-            lon_pole = -90.0
-            lat_pole =  45.0
+            lon_pole = -90.0_ip
+            lat_pole =  45.0_ip
           elseif(SubCase.eq.6)then
-            lon_pole = 90.0
-            lat_pole = -45.0
+            lon_pole = 90.0_ip
+            lat_pole = -45.0_ip
           elseif(SubCase.eq.7)then
-            lon_pole = -90.0
-            lat_pole = -45.0
+            lon_pole = -90.0_ip
+            lat_pole = -45.0_ip
           elseif(SubCase.eq.8)then
-            lon_pole =  90.0
-            lat_pole =  45.0
+            lon_pole =  90.0_ip
+            lat_pole =  45.0_ip
           endif
 
           if(time.lt.0.6_ip)then
@@ -1213,7 +1265,6 @@
           enddo
         enddo
 
-        !stop 1
         L1_toterror = L1_toterror / (nsmax * TotalVol)
         L2_toterror = L2_toterror /  nsmax
         L2_toterror = sqrt(L2_toterror) / TotalVol
@@ -1234,7 +1285,7 @@
         write(200,*)L1_toterror,L2_toterror,MassConsError
         do i=1,nxmax
           do j=1,nymax
-            !write(201,'(2f10.5,3f12.7)')x_cc(i),y_cc(j),truesol(i,j),concen(i,j,1,1,ts1),err(i,j)
+            !write(201,'(2f10.5,3f12.7)')x_cc_pd(i),y_cc_pd(j),truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
             write(201,'(3f12.7)')truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
           enddo
         enddo
@@ -1401,22 +1452,8 @@
         do n=1,nsmax
           do i=1,nxmax
             do j=1,nymax
-!              MassConsError = MassConsError + outflow_xy1_pd(10,10,n)*kappa_pd(10,10,      0) &
-!                                            + outflow_xy2_pd(10,10,n)*kappa_pd(10,10,nzmax+1)
               MassConsError = MassConsError + outflow_xy1_pd(i,j,n)*dx*dy*dz_vec_pd(0) &
                                             + outflow_xy2_pd(i,j,n)*dx*dy*dz_vec_pd(nzmax+1)
-
-          !  enddo
-          !  do k=1,nzmax
-          !    MassConsError = MassConsError + outflow_xz1_pd(i,k,n)*kappa_pd(i,     0,k) &
-          !                                  + outflow_xz2_pd(i,k,n)*kappa_pd(i,nymax+1,k)
-          !  enddo
-          !enddo
-
-          !do j=1,nymax
-          !  do k=1,nzmax
-          !    MassConsError = MassConsError + outflow_yz1_pd(j,k,n)*kappa_pd(      0,j,k) &
-          !                                  + outflow_yz2_pd(j,k,n)*kappa_pd(nxmax+1,j,k)
             enddo
           enddo
         enddo
@@ -1446,82 +1483,169 @@
         ! Setting up concentration for 2D cone/box to be advected
         ! horizontally
         if(IsLatLon)then
+          do n=1,nsmax
+            do k=1,nzmax
+              do j=1,nymax
+                do i=1,nxmax
+                    ! This concentration is described in Example 20.1 of
+                    ! LeVeque's Finite Volume book (p.460)
+                  lon_shifted = lon_cc_pd(i) - 360.0_ip
+                  if ((lon_shifted.lt.24.0_ip).and.(lon_shifted.gt.8.0_ip).and.&
+                      (lat_cc_pd(j).gt.-8.0_ip).and.(lat_cc_pd(j).lt.8.0_ip))then
+                    truesol(i,j) = 1.0_ip
+                  else
+                    truesol(i,j) = 0.0_ip
+                  endif
+                      ! Set up "cone" at lon = -16 with radius of 8deg
+                  r = sqrt((lon_shifted+16.0_ip)**2 + lat_cc_pd(j)**2)
+                  if (r .lt. 8.0_ip) then
+                    truesol(i,j) = 1.0_ip - r/8.0_ip
+                  endif
+
+                  err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
+
+                  L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
+                  L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
+                  MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
+
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+
+          L1_toterror = L1_toterror / (nsmax * TotalVol)
+          L2_toterror = L2_toterror / nsmax
+          L2_toterror = sqrt(L2_toterror) / TotalVol
+          write(global_info,*)"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+          write(global_info,*)" Original total mass = ",total_mass
+          write(global_info,*)" Calculated mass = ",MassConsError
+          MassConsError = abs((MassConsError-total_mass)/total_mass)
+          write(global_info,*)" Mass ratio = ",MassConsError
+          write(global_info,*)"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+
+          write(ofile1,'(a14)')'TC3_LL_err.dat'
+          open(200,file=ofile1,status='replace')
+          write(200,*)L1_toterror,L2_toterror,MassConsError
+          close(200)
+
+          write(ofile2,'(a14)')'TC3_LL_sol.dat'
+          open(201,file=ofile2,status='replace')
+          do i=1,nxmax
+            do j=1,nymax
+              write(201,'(3f12.7)')truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
+            enddo
+          enddo
+          close(201)
+        else ! IsLatLon :: this is the xy case
+          do n=1,nsmax
+            do k=1,nzmax
+              do j=1,nymax
+                do i=1,nxmax
+                    ! This concentration is described in Example 20.1 of
+                    ! LeVeque's Finite Volume book (p.460)
+                  if ((x_cc_pd(i).lt.0.6_ip).and.(x_cc_pd(i).gt.0.1_ip).and.&
+                      (y_cc_pd(j).gt.-0.25_ip).and.(y_cc_pd(j).lt.0.25_ip))then
+                    truesol(i,j) = 1.0_ip
+                  else
+                    truesol(i,j) = 0.0_ip
+                  endif
+                  r = sqrt((x_cc_pd(i)+0.45_ip)**2 + y_cc_pd(j)**2)
+                  if (r .lt. 0.35_ip) then
+                    truesol(i,j) = 1.0_ip - r/0.35_ip
+                  endif
+
+                  err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
+
+                  L1_toterror = L1_toterror + abs(err(i,j))*dx*dy*dz_vec_pd(k)
+                  L2_toterror = L2_toterror + err(i,j)*err(i,j)*dx*dy*dz_vec_pd(k)
+                  MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*dx*dy*dz_vec_pd(k)
+
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+
+          L1_toterror = L1_toterror / (nsmax * TotalVol)
+          L2_toterror = L2_toterror /  nsmax
+          L2_toterror = sqrt(L2_toterror) / TotalVol
+          MassConsError = abs((MassConsError-total_mass)/total_mass)
+          write(ofile1,'(a11)')'TC3_err.dat'
+          write(ofile2,'(a11)')'TC3_sol.dat'
+          open(200,file=ofile1,status='replace')
+          open(201,file=ofile2,status='replace')
+          write(200,*)L1_toterror,L2_toterror,MassConsError
+          do i=1,nxmax
+            do j=1,nymax
+              write(201,'(3f12.7)')truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
+            enddo
+          enddo
+          close(200)
+          close(201)
+        endif
+      endif ! TestCase.eq.3
+
+      if(TestCase.eq.4)then
+        ! This solution is from Carslaw and Jaeger 1959, p88        
+
+        xm = 1.0
+        ym = 1.0
+        zm = 1.0
+
+        Tc = (TC4_conc_2-TC4_conc_1)*sqrt(TC4_k_2) / &
+                (sqrt(TC4_k_2) + sqrt(TC4_k_1))
+        do i=1,nxmax
+          eta1 = 0.5_ip*(x_cc_pd(i)-xm)/(sqrt(TC4_k_1*time))
+          eta2 = 0.5_ip*(x_cc_pd(i)-xm)/(sqrt(TC4_k_2*time))
+          if (x_cc_pd(i).lt.xm) then
+            tsolx(i) = TC4_conc_1 + Tc * &
+                        (1.0_ip + erf(eta1))
+          else
+            tsolx(i) = TC4_conc_1 + Tc * &
+                        (1.0_ip + sqrt(TC4_k_1/TC4_k_2)*erf(eta2))
+          endif
+        enddo
+
+        do j=1,nymax
+          eta1 = 0.5_ip*(y_cc_pd(j)-ym)/(sqrt(TC4_k_1*time))
+          eta2 = 0.5_ip*(y_cc_pd(j)-ym)/(sqrt(TC4_k_2*time))
+          if (y_cc_pd(j).lt.ym) then
+            tsoly(j) = TC4_conc_1 + Tc * &
+                        (1.0 + erf(eta1))
+          else
+            tsoly(j) = TC4_conc_1 + Tc * &
+                        (1.0 + sqrt(TC4_k_1/TC4_k_2)*erf(eta2))
+          endif
+        enddo
+
+        do k=1,nzmax
+          eta1 = 0.5_ip*(z_cc_pd(k)-zm)/(sqrt(TC4_k_1*time))
+          eta2 = 0.5_ip*(z_cc_pd(k)-zm)/(sqrt(TC4_k_2*time))
+          if (z_cc_pd(k).lt.zm) then
+            tsolz(k) = TC4_conc_1 + Tc * &
+                        (1.0 + erf(eta1))
+          else
+            tsolz(k) = TC4_conc_1 + Tc * &
+                        (1.0 + sqrt(TC4_k_1/TC4_k_2)*erf(eta2))
+          endif
+        enddo
+
         do n=1,nsmax
           do k=1,nzmax
             do j=1,nymax
               do i=1,nxmax
-                  ! This concentration is described in Example 20.1 of
-                  ! LeVeque's Finite Volume book (p.460)
-                lon_shifted = lon_cc_pd(i) - 360.0_ip
-                if ((lon_shifted.lt.24.0_ip).and.(lon_shifted.gt.8.0_ip).and.&
-                    (lat_cc_pd(j).gt.-8.0_ip).and.(lat_cc_pd(j).lt.8.0_ip))then
-                  truesol(i,j) = 1.0_ip
+                if (SubCase.eq.1.or.SubCase.eq.4) then
+                  err3D(i,j,k)=tsolx(i)-concen_pd(i,j,k,n,ts1)
+                elseif (SubCase.eq.2.or.SubCase.eq.5) then
+                  err3D(i,j,k)=tsoly(j)-concen_pd(i,j,k,n,ts1)
+                elseif (SubCase.eq.3.or.SubCase.eq.6) then
+                  err3D(i,j,k)=tsolz(k)-concen_pd(i,j,k,n,ts1)
                 else
-                  truesol(i,j) = 0.0_ip
-                endif
-                    ! Set up "cone" at lon = -16 with radius of 8deg
-                r = sqrt((lon_shifted+16.0_ip)**2 + lat_cc_pd(j)**2)
-                if (r .lt. 8.0_ip) then
-                  truesol(i,j) = 1.0_ip - r/8.0_ip
+                  write(global_error,*)"Subcase not known.  Stopping program."
+                  stop 1
                 endif
 
-                err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
-
-                L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
-                L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
-                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
-
-              enddo ! loop over i
-            enddo ! loop over j
-          enddo ! loop over k
-        enddo ! loop over n
-
-        L1_toterror = L1_toterror / (nsmax * TotalVol)
-        L2_toterror = L2_toterror / nsmax
-        L2_toterror = sqrt(L2_toterror) / TotalVol
-        write(global_info,*)"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
-        write(global_info,*)" Original total mass = ",total_mass
-        write(global_info,*)" Calculated mass = ",MassConsError
-        MassConsError = abs((MassConsError-total_mass)/total_mass)
-        write(global_info,*)" Mass ratio = ",MassConsError
-        write(global_info,*)"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-
-        write(ofile1,'(a14)')'TC3_LL_err.dat'
-        open(200,file=ofile1,status='replace')
-        write(200,*)L1_toterror,L2_toterror,MassConsError
-        close(200)
-
-        !write(ofile2,'(a14)')'TC3_LL_sol.dat'
-        !open(201,file=ofile2,status='replace')
-        !do i=1,nxmax
-        !  do j=1,nymax
-        !    write(201,'(3f12.7)')truesol(i,j),concen(i,j,1,1,ts1),err(i,j)
-        !  enddo
-        !enddo
-        !close(201)
-
-        else
-        do n=1,nsmax
-          do k=1,nzmax
-            do j=1,nymax
-              do i=1,nxmax
-                  ! This concentration is described in Example 20.1 of
-                  ! LeVeque's Finite Volume book (p.460)
-                if ((x_cc_pd(i).lt.0.6_ip).and.(x_cc_pd(i).gt.0.1_ip).and.&
-                    (y_cc_pd(j).gt.-0.25_ip).and.(y_cc_pd(j).lt.0.25_ip))then
-                  truesol(i,j) = 1.0_ip
-                else
-                  truesol(i,j) = 0.0_ip
-                endif
-                r = sqrt((x_cc_pd(i)+0.45_ip)**2 + y_cc_pd(j)**2)
-                if (r .lt. 0.35_ip) then
-                  truesol(i,j) = 1.0_ip - r/0.35_ip
-                endif
-
-                err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
-
-                L1_toterror = L1_toterror + abs(err(i,j))*dx*dy*dz_vec_pd(k)
-                L2_toterror = L2_toterror + err(i,j)*err(i,j)*dx*dy*dz_vec_pd(k)
+                L1_toterror = L1_toterror + abs(err3D(i,j,k))*dx*dy*dz_vec_pd(k)
+                L2_toterror = L2_toterror + err3D(i,j,k)*err3D(i,j,k)*dx*dy*dz_vec_pd(k)
                 MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*dx*dy*dz_vec_pd(k)
 
               enddo ! loop over i
@@ -1533,93 +1657,82 @@
         L2_toterror = L2_toterror /  nsmax
         L2_toterror = sqrt(L2_toterror) / TotalVol
         MassConsError = abs((MassConsError-total_mass)/total_mass)
-        write(ofile1,'(a11)')'TC3_err.dat'
-        write(ofile2,'(a11)')'TC3_sol.dat'
+        write(ofile1,'(a11)')'TC4_err.dat'
+        write(ofile2,'(a11)')'TC4_sol.dat'
         open(200,file=ofile1,status='replace')
         open(201,file=ofile2,status='replace')
         write(200,*)L1_toterror,L2_toterror,MassConsError
-        do i=1,nxmax
-          do j=1,nymax
-            write(201,'(3f12.7)')truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
+
+        lx=ceiling(nxmax*0.5)
+        ly=ceiling(nymax*0.5)
+        lz=ceiling(nzmax*0.5)
+        if (SubCase.eq.1.or.SubCase.eq.4) then
+          do i=1,nxmax
+            write(201,'(4f12.7)')x_cc_pd(i),tsolx(i),concen_pd(i,ly,lz,1,ts1),err3D(i,ly,lz)
+            !write(global_log,*)x_cc_pd(i),tsolx(i),concen_pd(i,ly,lz,1,ts1),err3D(i,ly,lz)
           enddo
-        enddo
+        elseif (SubCase.eq.2.or.SubCase.eq.5) then
+          do j=1,nymax
+            write(201,'(4f12.7)')y_cc_pd(j),tsoly(j),concen_pd(lx,j,lz,1,ts1),err3D(lx,j,lz)
+            !write(global_log,*)y_cc_pd(j),tsoly(j),concen_pd(lx,j,lz,1,ts1),err3D(lx,j,lz)
+          enddo
+        elseif (SubCase.eq.3.or.SubCase.eq.6) then
+          do k=1,nzmax
+            write(201,'(4f12.7)')z_cc_pd(k),tsolz(k),concen_pd(lx,ly,k,1,ts1),err3D(lx,ly,k)
+            !write(global_log,*)z_cc_pd(k),tsolz(k),concen_pd(lx,ly,k,1,ts1),err3D(lx,ly,k)
+          enddo
+        endif
         close(200)
         close(201)
-
-        endif
-
+        write(global_info,*)"Wrote to files TC4_err.dat and TC4_sol.dat"
       endif
-
-!      if(TestCase.eq.4)then
-!        ! Setting up halfspace concentration for diffusion testing
-!                !  With diffusivity_horz=12000 and dx=dy=dz=0.5, use dt =
-!                !  5.0e-4_ip
-!        write(global_info,*)"Setting up concentration for TestCase 4"
-!        concen = 0.0_ip
-!        if(SubCase.eq.1.or.SubCase.eq.4)then
-!          do i=0,nxmax+2
-!            if(x_cc(i).lt.0.0_ip) &
-!              concen(i,:,:,:,:) = 1.0_ip
-!          enddo
-!        elseif(SubCase.eq.2.or.SubCase.eq.5)then
-!          do j=0,nymax+2
-!            if(y_cc(j).lt.0.0_ip) &
-!              concen(:,j,:,:,:) = 1.0_ip
-!          enddo
-!        elseif(SubCase.eq.3.or.SubCase.eq.6)then
-!          do k=0,nzmax+2
-!            if(z_cc(k).lt.1.0_ip) &
-!              concen(:,:,k,:,:) = 1.0_ip
-!          enddo
-!        endif
-!      endif
 
       if(TestCase.eq.5)then
         if(IsLatLon)then
-        do n=1,nsmax
-          do k=1,nzmax
-            do j=1,nymax
-              do i=1,nxmax
-               
-                  ! This concentration is similar to Example 5.4.4 of
-                  ! Durran's Finite Volume book (p.284)
-                lon_shifted = lon_cc_pd(i) - 360.0_ip
-                r = sqrt((lon_shifted+16.0_ip)**2.0_ip + &
-                         (lat_cc_pd(j))**2.0_ip) / 16.0_ip
-                r = min(1.0_ip,r)
-                truesol(i,j) = 0.5_ip*(1.0_ip+cos(PI*r))
+          do n=1,nsmax
+            do k=1,nzmax
+              do j=1,nymax
+                do i=1,nxmax
+                 
+                    ! This concentration is similar to Example 5.4.4 of
+                    ! Durran's Finite Volume book (p.284)
+                  lon_shifted = lon_cc_pd(i) - 360.0_ip
+                  r = sqrt((lon_shifted+16.0_ip)**2.0_ip + &
+                           (lat_cc_pd(j))**2.0_ip) / 16.0_ip
+                  r = min(1.0_ip,r)
+                  truesol(i,j) = 0.5_ip*(1.0_ip+cos(PI*r))
  
-                err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
-                
-                L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
-                L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
-                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
+                  err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
+                  
+                  L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
+                  L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
+                  MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
 
-              enddo ! loop over i
-            enddo ! loop over j
-          enddo ! loop over k
-        enddo ! loop over n
-        L1_toterror = L1_toterror / (nsmax * TotalVol)
-        L2_toterror = L2_toterror / nsmax
-        L2_toterror = sqrt(L2_toterror) / TotalVol
-        MassConsError = abs((MassConsError-total_mass)/total_mass)
-        if(time.lt.3.0)then
-          write(ofile1,'(a18)')'TC5_LL_mid_err.dat'
-          write(ofile2,'(a18)')'TC5_LL_mid_sol.dat'
-        else
-          write(ofile1,'(a14)')'TC5_LL_err.dat'
-          write(ofile2,'(a14)')'TC5_LL_sol.dat'
-        endif
-        open(200,file=ofile1,status='replace')
-        open(201,file=ofile2,status='replace')
-        write(200,*)L1_toterror,L2_toterror,MassConsError
-        do i=1,nxmax
-          do j=1,nymax
-            write(201,'(3f12.7)')truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
+                enddo ! loop over i
+              enddo ! loop over j
+            enddo ! loop over k
+          enddo ! loop over n
+          L1_toterror = L1_toterror / (nsmax * TotalVol)
+          L2_toterror = L2_toterror / nsmax
+          L2_toterror = sqrt(L2_toterror) / TotalVol
+          MassConsError = abs((MassConsError-total_mass)/total_mass)
+          if(time.lt.3.0)then
+            write(ofile1,'(a18)')'TC5_LL_mid_err.dat'
+            write(ofile2,'(a18)')'TC5_LL_mid_sol.dat'
+          else
+            write(ofile1,'(a14)')'TC5_LL_err.dat'
+            write(ofile2,'(a14)')'TC5_LL_sol.dat'
+          endif
+          open(200,file=ofile1,status='replace')
+          open(201,file=ofile2,status='replace')
+          write(200,*)L1_toterror,L2_toterror,MassConsError
+          do i=1,nxmax
+            do j=1,nymax
+              write(201,'(3f12.7)')truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
+            enddo
           enddo
-        enddo
-        close(200)
-        close(201)
+          close(200)
+          close(201)
 
         else
         ! Setting up concentration pulse for circular shear advection
@@ -1661,11 +1774,10 @@
         enddo
         close(200)
         close(201)
+        write(global_info,*)"Wrote to files TC5_err.dat TC5_sol.dat"
         endif
 
       endif
-
-
 
       if(TestCase.eq.6)then
         do n=1,nsmax
