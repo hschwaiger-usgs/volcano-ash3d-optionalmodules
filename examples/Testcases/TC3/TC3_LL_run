@@ -4,6 +4,7 @@ ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
 ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
 #ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
+<<<<<<< HEAD
 TESTCASE=3
 export TESTCASE
 
@@ -15,6 +16,19 @@ nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
 #nlim_label=(LIM_SB)
 dx=(2000 1000 0500 0250 0125)
 idx=4    # 5 (should take about 98 minutes for 4)
+=======
+TESTCASE=1
+export TESTCASE
+
+# Current limiter options
+#      LIM_NONE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_SUPERBEE,LIM_MC
+nlim=(LIM_NONE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_SUPERBEE LIM_MC)
+nlim_label=(LIM_NO LIM_LW LIM_BW LIM_FM LIM_MM LIM_SB LIM_MC)
+
+
+dx=(2000 1000 0500 0250 0125)
+idx=3    # 5
+>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 
 limmin=0 # index of above list starting with 0
 limmax=2

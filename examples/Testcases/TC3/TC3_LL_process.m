@@ -4,8 +4,13 @@ TestCase = 3;
 
 % Set this to 1 if you want plots of the solution and errors.
 % Set to 0 if you only want convergence plots and time plots.
+<<<<<<< HEAD
 cplotsol  = 0;
 cploterr  = 1;
+=======
+cplotsol  = 1;
+cploterr  = 0;
+>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 
 nlim = 7;
 nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
@@ -20,7 +25,7 @@ xmax = 396.0;
 ymin = -36.0;
 ymax =  36.0;
 
-nresmax  = 4;
+nresmax  = 5;
 
 GlobL1Errors  = zeros(nresmax,nlim);
 GlobExecTimes = zeros(nresmax,nlim);
@@ -60,7 +65,11 @@ if cplotsol==1
     subplot(2,nresmax+1,inres+nresmax+1),contour(x,y,abs(err));axis xy;
           axis([xmin xmax ymin ymax]);axis square ;axis nolabel;
   end
+<<<<<<< HEAD
   print('PLOTS/TC3_LL_sol_LIM_.eps','-color','-depsc');
+=======
+  print('TC3_LL_sol_LIM_.eps','-color','-depsc');
+>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 end
 
 if cploterr==1
@@ -103,6 +112,10 @@ if cploterr==1
   subplot(2,3,5),loglog(resdx(1:nresmax),GlobL2Errors(1:nresmax,:));axis([dxmin dxmax 1.0e-8 1.0e-6]);
   legend('NO','LW','BW','FM','MM','SB','MC')
 
+<<<<<<< HEAD
   print('PLOTS/TC3_LL_convergence.eps','-color','-depsc')
+=======
+  print('TC3_LL_convergence.eps','-color','-depsc')
+>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
   %close();
 end

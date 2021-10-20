@@ -18,8 +18,12 @@ limmax=datlim(2)+1;
 
 nres  = char('50000','25000','12500','06250','03125');
 resdx = [0.05000 0.025000 0.012500 0.006250 0.003125];
+<<<<<<< HEAD
 
 nsub=submax-submin+1;
+=======
+subcase = 8;
+>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 % Horizontal advection:
 %  subcase 1 : x+y0
 %  subcase 2 : x-y0
@@ -67,6 +71,7 @@ for subcase = submin:submax
  end
 end
 
+<<<<<<< HEAD
 % Write out the L1 errors for each subcase
 ConvRate=zeros(submax,nlim);
 hf = figure;
@@ -118,3 +123,43 @@ for subcase = submin:submax
 end
 ConvRate
 save ConvRate_XY.dat ConvRate;
+=======
+%Specify point of O(1) and O(2) intersection
+Ox=1.0e-1;
+Oy=1.0e0;
+dxmin=1.0e-3;
+dxmax=1.0e-1;
+L1min=1.0e-4;
+L1max=1.0e0;
+L2min=1.0e-3;
+L2max=1.0e1;
+Ermin=1.0e-16;
+Ermax=1.0e-5;
+
+figure;
+% Interior
+subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--');hold on;
+subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
+
+subplot(2,3,1),loglog(resdx(1:nresmax),GlobL1Errors1(1:nresmax,:));axis([dxmin dxmax L1min L1max]);hold off;
+ylabel('L_1 Error')
+xlabel('dx')
+%legend('O(1)','O(2)','None','Lax-Wen','BeamWarm','Fromm','MinMod','Superbee','MC','Location','northwest');
+subplot(2,3,2),loglog(resdx(1:nresmax),GlobL2Errors1(1:nresmax,:));axis([dxmin dxmax L2min L2max]);
+ylabel('L_2 Error')
+xlabel('dx')
+subplot(2,3,3),loglog(resdx(1:nresmax),GlobMCErrors1(1:nresmax,:));axis([dxmin dxmax Ermin Ermax]);
+ylabel('MC Error')
+xlabel('dx')
+
+% Boundary
+subplot(2,3,4),loglog(resdx(1:nresmax),GlobL1Errors2(1:nresmax,:));axis([dxmin dxmax L1min L1max]);
+ylabel('L_1 Error')
+xlabel('dx')
+subplot(2,3,5),loglog(resdx(1:nresmax),GlobL2Errors2(1:nresmax,:));axis([dxmin dxmax L2min L2max]);
+ylabel('L_2 Error')
+xlabel('dx')
+subplot(2,3,6),loglog(resdx(1:nresmax),GlobMCErrors2(1:nresmax,:));axis([dxmin dxmax Ermin Ermax]);
+ylabel('MC Error')
+xlabel('dx')
+>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629

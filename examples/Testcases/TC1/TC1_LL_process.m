@@ -28,8 +28,12 @@ nsub=submax-submin+1;
 %  subcase 8 : x+y-
 
 nlim = limmax-limmin+1;
+<<<<<<< HEAD
 nlim_label = char('LIM_NO','LIM_SB','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_MC');
 nlimLegLabel=char('NO','SB','LW','BW','FM','MM','MC');
+=======
+nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
+>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 
 GlobL1Errors1=zeros(nsub,nresmax,nlim);
 GlobL2Errors1=zeros(nsub,nresmax,nlim);
@@ -64,11 +68,50 @@ for subcase = submin:submax
  end
 end
 
+<<<<<<< HEAD
 % Write out the L1 errors for each subcase
 ConvRate=zeros(submax,nlim);
 hf = figure;
 for subcase = submin:submax
  ConvRate(subcase,:)=log(GlobL1Errors1(subcase,1,1:nlim)./GlobL1Errors1(subcase,nresmax,1:nlim))/log(resdx(1)/resdx(nresmax));
+=======
+%Specify point of O(1) and O(2) intersection
+Ox=1.0e1;
+Oy=1.0e-3;
+dxmin=1.0e-1;
+dxmax=1.0e1;
+L1min=1.0e-7;
+L1max=1.0e-3;
+L2min=1.0e-11;
+L2max=1.0e-7;
+Ermin=1.0e-16;
+Ermax=1.0e-5;
+figure;
+% Interior
+subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--');hold on;
+subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
+subplot(2,3,1),loglog(resdx(1:nresmax),GlobL1Errors1(1:nresmax,:));axis([dxmin dxmax L1min L1max]);hold off;
+ylabel('L_1 Error')
+xlabel('dx')
+%legend('O(1)','O(2)','None','Lax-Wen','BeamWarm','Fromm','MinMod','Superbee','MC','Location','northwest');
+subplot(2,3,2),loglog(resdx(1:nresmax),GlobL2Errors1(1:nresmax,:));axis([dxmin dxmax L2min L2max]);
+ylabel('L_2 Error')
+xlabel('dx')
+subplot(2,3,3),loglog(resdx(1:nresmax),GlobMCErrors1(1:nresmax,:));axis([dxmin dxmax Ermin Ermax]);
+ylabel('MC Error')
+xlabel('dx')
+
+% Boundary
+subplot(2,3,4),loglog(resdx(1:nresmax),GlobL1Errors2(1:nresmax,:));axis([dxmin dxmax L1min L1max]);
+ylabel('L_1 Error')
+xlabel('dx')
+subplot(2,3,5),loglog(resdx(1:nresmax),GlobL2Errors2(1:nresmax,:));axis([dxmin dxmax L2min L2max]);
+ylabel('L_2 Error')
+xlabel('dx')
+subplot(2,3,6),loglog(resdx(1:nresmax),GlobMCErrors2(1:nresmax,:));axis([dxmin dxmax Ermin Ermax]);
+ylabel('MC Error')
+xlabel('dx')
+>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 
  clf;
  %Specify point of O(1) and O(2) intersection
