@@ -6,7 +6,7 @@ resdx = [2.0 1.0 0.5 0.25 0.125];
 nx    = [31 72 144 288 572];
 ny    = [31 72 144 288 572];
 
-subcase = 5;
+subcase = 1;
 % Horizontal advection:
 %  subcase 1 : x+y0
 %  subcase 2 : x-y0

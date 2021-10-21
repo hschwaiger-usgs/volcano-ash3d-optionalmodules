@@ -102,11 +102,7 @@ figure(1);
           if (il==nlim)
             figure(1);
             %if IsOct == 1
-<<<<<<< HEAD
               print('PLOTS/xyz_compare.eps','-color','-depsc');
-=======
-              print('xyz_compare.eps','-color','-depsc');
->>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
             %else
             %  print(1,'-depsc2','xyz_compare.eps')
             %end

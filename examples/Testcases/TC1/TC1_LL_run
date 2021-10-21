@@ -8,6 +8,8 @@ TESTCASE=1
 export TESTCASE
 ASH3DCFL=0.99
 export ASH3DCFL
+
+# Subcases
 sub=(0 1 2 3 4 5 6 7 8)
 # Horizontal advection:
 #  subcase 1 : x+y0
@@ -20,7 +22,6 @@ sub=(0 1 2 3 4 5 6 7 8)
 #  subcase 8 : x+y-
 
 # Current limiter options
-<<<<<<< HEAD
 #      LIM_NONE,LIM_SUPERBEE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_MC
 nlim=(LIM_NONE LIM_SUPERBEE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_MC)
 nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
@@ -33,15 +34,6 @@ idx=3    # Approximate duration (minutes) for 7 and 2 limiters, respectively
          #  3 :  29 ; 7.5
          #  4 : 130 ; 32
          #  5 : 
-=======
-#      LIM_NONE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_SUPERBEE,LIM_MC
-nlim=(LIM_NONE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_SUPERBEE LIM_MC)
-nlim_label=(LIM_NO LIM_LW LIM_BW LIM_FM LIM_MM LIM_SB LIM_MC)
-
-
-dx=(2000 1000 0500 0250 0125)
-idx=3    # 5
->>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 
 limmin=0 # index of above list starting with 0
 limmax=1

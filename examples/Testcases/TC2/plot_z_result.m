@@ -1,10 +1,10 @@
 clear all;
 
-nresmax  = 5;
+nresmax  = 4;
 nres  = char('50000', '25000','12500','06250','03125');
 resdz = [0.050000 0.025000 0.012500 0.006250 0.003125];
 nz    = [40 80 160 320 640];
-subcase = 2;
+subcase = 1;
 % Vertical advection:
 %  subcase 1 : vz+ vf0
 %  subcase 2 : vz- vf0

@@ -2,39 +2,6 @@
 #Created by L.G. Mastin, R.P. Denlinger and H.F. Schwaiger, U.S. Geological Survey, 2009.
 #
 #GENERAL SOURCE PARAMETERS. DO NOT DELETE ANY LINES
-<<<<<<< HEAD
-#  The first line of this block identifies the projection used and the form of
-#  the input coordinates and is of the following format:
-#    latlonflag projflag (variable list of projection parameters)
-#  projflag should describe the projection used for both the windfile(s) and
-#  the input coordinates.  Currently, these need to be the same projection.
-#  For a particular projflag, additional values are read defining the projection.
-#    latlonflag = 0 if the input coordinates are already projected
-#               = 1 if the input coordinates are in lat/lon
-#    projflag   = 1 -- polar stereographic projection
-#           lambda0 -- longitude of projection point
-#           phi0    -- latitude of projection point
-#           k0      -- scale factor at projection point
-#           radius  -- earth radius for spherical earth
-#               = 2 -- Alberts Equal Area
-#           lambda0 -- 
-#           phi0    -- 
-#           phi1    -- 
-#           phi2    -- 
-#               = 3 -- UTM
-#           zone    -- zone number
-#           north   -- flag indication norther (1) or southern (0) hemisphere
-*******************************************************************************
-TC2                           #Volcano name (character*30)
-0 0 0.0 90.0 0.933 6367.470    #Proj flags and params
--0.25   -0.25                #x, y of LL corner of grid (km, or deg. if latlongflag=1)
- 0.5    0.5                #grid width and height (km, or deg. if latlonflag=1)
- 0.0    0.0                #vent location         (km, or deg. if latlonflag=1)
- 0.025  0.025                #DX, DY of grid cells  (km, or deg.)
-0.003125                            #DZ of grid cells      (always km)
-0.0    4.                   #diffusion coefficient (m2/s), Suzuki constant
-1                              #neruptions, number of eruptions or pulses
-=======
 *******************************************************************************
 TC2                          # Volcano name (character*30)
 0 0 0.0 90.0 0.933 6367.470  # Proj flags and params
@@ -45,7 +12,6 @@ TC2                          # Volcano name (character*30)
 0.003125                     # DZ of grid cells      (always km)
 0.0    4.                    # diffusion coefficient (m2/s), Suzuki constant
 1                            # neruptions, number of eruptions or pulses
->>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 *******************************************************************************
 #ERUPTION LINES (number = neruptions)
 #In the following line, each line represents one eruptive pulse.  
