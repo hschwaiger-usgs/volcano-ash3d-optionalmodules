@@ -57,7 +57,7 @@ do
    else
      mv TC${TESTCASE}_err.dat DATA_xy/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_err.dat
      mv TC${TESTCASE}_sol.dat DATA_xy/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_sol.dat
-     grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA_xy/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+     grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
   fi
   echo "-------------------------------------------------------------------------"
   echo "-------------------------------------------------------------------------"

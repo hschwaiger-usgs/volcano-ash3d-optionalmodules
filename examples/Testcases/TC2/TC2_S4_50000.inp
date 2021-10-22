@@ -9,7 +9,7 @@ TC2                          # Volcano name (character*30)
  0.5    0.5                  # grid width and height (km, or deg. if latlonflag=1)
  0.0    0.0                  # vent location         (km, or deg. if latlonflag=1)
  0.025  0.025                # DX, DY of grid cells  (km, or deg.)
-0.05                         # DZ of grid cells      (always km)
+0.050                        # DZ of grid cells      (always km)
 0.0    4.                    # diffusion coefficient (m2/s), Suzuki constant
 1                            # neruptions, number of eruptions or pulses
 *******************************************************************************

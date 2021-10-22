@@ -2,27 +2,6 @@
 #Created by L.G. Mastin, R.P. Denlinger and H.F. Schwaiger, U.S. Geological Survey, 2009.
 #
 #GENERAL SOURCE PARAMETERS. DO NOT DELETE ANY LINES
-#  The first line of this block identifies the projection used and the form of
-#  the input coordinates and is of the following format:
-#    latlonflag projflag (variable list of projection parameters)
-#  projflag should describe the projection used for both the windfile(s) and
-#  the input coordinates.  Currently, these need to be the same projection.
-#  For a particular projflag, additional values are read defining the projection.
-#    latlonflag = 0 if the input coordinates are already projected
-#               = 1 if the input coordinates are in lat/lon
-#    projflag   = 1 -- polar stereographic projection
-#           lambda0 -- longitude of projection point
-#           phi0    -- latitude of projection point
-#           k0      -- scale factor at projection point
-#           radius  -- earth radius for spherical earth
-#               = 2 -- Alberts Equal Area
-#           lambda0 -- 
-#           phi0    -- 
-#           phi1    -- 
-#           phi2    -- 
-#               = 3 -- UTM
-#           zone    -- zone number
-#           north   -- flag indication norther (1) or southern (0) hemisphere
 *******************************************************************************
 TC1                           # Volcano name (character*30)
 0 0 0.0 90.0 0.933 6367.470   # Proj flags and params
@@ -72,7 +51,7 @@ ascii          # format of ash concentration files                              
 *******************************************************************************
 #WIND INPUT FILES
 *******************************************************************************
-TC1_xy.win
+TC1_XY.win
 *******************************************************************************
 #AIRPORT LOCATION FILE
 *******************************************************************************

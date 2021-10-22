@@ -8,7 +8,7 @@ TC3                           # Volcano name (character*30)
 -1.0   -1.0                   # x, y of LL corner of grid (km, or deg. if latlongflag=1)
  2.0    2.0                   # grid width and height (km, or deg. if latlonflag=1)
  0.0    0.0                   # vent location         (km, or deg. if latlonflag=1)
- 0.0125  0.0125               # DX, DY of grid cells  (km, or deg.)
+ 0.025  0.025                 # DX, DY of grid cells  (km, or deg.)
 0.05                          # DZ of grid cells      (always km)
 0.0    4.                     # diffusion coefficient (m2/s), Suzuki constant
 1                             # neruptions, number of eruptions or pulses
@@ -51,7 +51,7 @@ ascii          # format of ash concentration files                              
 *******************************************************************************
 #WIND INPUT FILES
 *******************************************************************************
-TC3_xy.win
+TC3_XY.win
 *******************************************************************************
 #AIRPORT LOCATION FILE
 *******************************************************************************
