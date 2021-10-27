@@ -1,11 +1,11 @@
 clear all;
 
 % Load parameters from run script
-nresmax = load('TC1_XY_idx.dat');
-datsub  = load('TC1_XY_sub.dat');
+nresmax = load('TC1_LL_idx.dat');
+datsub  = load('TC1_LL_sub.dat');
 submin=datsub(1);
 submax=datsub(2);
-datlim  = load('TC1_XY_lim.dat');
+datlim  = load('TC1_LL_lim.dat');
 limmin=datlim(1)+1;
 limmax=datlim(2)+1;
 % Over-ride here if you need to

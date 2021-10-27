@@ -1,1 +1,2 @@
-rm 3d_tephra_* Ash3d.lst progress.txt DATA/TC*dat PLOTS/*png
+rm 3d_tephra_* Ash3d.lst progress.txt DATA/TC*dat DATA/TC*err.dat TC*.dat PLOTS/*png
+

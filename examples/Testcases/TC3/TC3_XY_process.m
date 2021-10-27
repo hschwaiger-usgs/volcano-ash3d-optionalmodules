@@ -3,118 +3,116 @@ clear all;
 IsOct    = 0;
 TestCase = 3;
 
+% Load parameters from run script
+nresmax = load('TC3_XY_idx.dat');
+datlim  = load('TC3_XY_lim.dat');
+limmin=datlim(1)+1;
+limmax=datlim(2)+1;
+
 % Set this to 1 if you want plots of the solution and errors.
 % Set to 0 if you only want convergence plots and time plots.
-cplotsol  = 1;
-cploterr1 = 1;
-cploterr2 = 1;
-cplotmass = 1;
-
-nlim = 1;
-nlim_label = char('LIM_NO','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_SB','LIM_MC');
-nres  = char('50000','25000','12500','06250','03125');
+cplotsol  = 1; % Plot solution (row=true, calc, err, col=dx)
+cploterr1 = 1; % Plot L1 error
+cploterr2 = 0; % Plot L2 error
+cplotmass = 1; % Plot Mass Consv error
 
 resdx = [0.05000 0.025000 0.012500 0.006250 0.003125];
 resnx = [40 80 160 320 640];
 resny = [40 80 160 320 640];
+
+nlim = limmax-limmin+1;
+nlim_label = char('LIM_NO','LIM_SB','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_MC');
+nlimLegLabel=char('NO','SB','LW','BW','FM','MM','MC');
+nres  = char('50000','25000','12500','06250','03125');
 
 xmin = -1.0;
 xmax =  1.0;
 ymin = -1.0;
 ymax =  1.0;
 
-nresmax  = 3;
-
 GlobL1Errors  = zeros(nresmax,nlim);
+GlobL2Errors  = zeros(nresmax,nlim);
+GlobMCErrors  = zeros(nresmax,nlim);
 GlobExecTimes = zeros(nresmax,nlim);
-GlobalConserv = zeros(nresmax,nlim);
+
 cinter = linspace(0.05,0.95,10);
 
-figure(1);
+figure(1);  % Figure 1 will be for the final contour plot of the individual runs
+for il = 1:nlim
+  for inres = 1:nresmax
 
-  for il = 1:nlim
-    for inres = 1:nresmax
+    ifile = sprintf('DATA/TC%i_XY_%s_%s_sol.dat',  ...
+        TestCase,nlim_label(il,:),nres(inres,:));
+    ierfile = sprintf('DATA/TC%i_XY_%s_%s_err.dat',  ...
+        TestCase,nlim_label(il,:),nres(inres,:));
+    itimefile = sprintf('DATA/TC%i_XY_%s_etime.dat',  ...
+        TestCase,nlim_label(il,:));
 
-      ifile = sprintf('DATA_xy/TC%i_XY_%s_%s_sol.dat',  ...
-          TestCase,nlim_label(il,:),nres(inres,:));
-      ierfile = sprintf('DATA_xy/TC%i_XY_%s_%s_err.dat',  ...
-          TestCase,nlim_label(il,:),nres(inres,:));
-      itimefile = sprintf('DATA_xy/TC%i_XY_%s_etime.dat',  ...
-          TestCase,nlim_label(il,:));
+    dx = resdx(inres);
+    nx = resnx(inres);
+    ny = resny(inres);
 
-      dx = resdx(inres);
-      nx = resnx(inres);
-      ny = resny(inres);
+    x_res = linspace(-1.0+0.5*dx,1.0-0.5*dx,nx);
+    y_res = linspace(-1.0+0.5*dx,1.0-0.5*dx,ny);
+    [xg yg] = meshgrid(x_res,y_res);
+    x =  xg(1,:);
+    y =  yg(:,1);
 
-      x_res = linspace(-1.0+0.5*dx,1.0-0.5*dx,nx);
-      y_res = linspace(-1.0+0.5*dx,1.0-0.5*dx,ny);
-      [xg yg] = meshgrid(x_res,y_res);
-      x =  xg(1,:);
-      y =  yg(:,1);
+    % Reading in solution file with columns of "true","calc","err"
+    data = load(ifile);
+    truesol = reshape(data(:,1),nx,ny);
+    c       = reshape(data(:,2),nx,ny);
+    err     = reshape(data(:,3),nx,ny);
+    t_tot   = sum(sum(truesol));
+    c_tot   = sum(sum(c));
+    conserv = c_tot/t_tot;
+    L1L2errors = load(ierfile);
+    truepeak = max(max(truesol));
 
-      % VARIABLES = "true","calc","err"
-      data = load(ifile);
-      truesol = reshape(data(:,1),nx,ny);
-      c       = reshape(data(:,2),nx,ny);
-      err     = reshape(data(:,3),nx,ny);
-      t_tot   = sum(sum(truesol));
-      c_tot   = sum(sum(c));
-      conserv = c_tot/t_tot;
-      L1L2errors = load(ierfile);
-      truepeak = max(max(truesol));
+    GlobL1Errors(inres,il) = L1L2errors(1);
+    GlobL2Errors(inres,il) = L1L2errors(2);
+    GlobMCErrors(inres,il) = L1L2errors(3);
 
-      GlobL1Errors(inres,il) = L1L2errors(1);
-      GlobL2Errors(inres,il) = L1L2errors(2);
-      GlobalConserv(inres,il)= L1L2errors(3);
-
-      if (cplotsol == 1)
-        if (inres == 1)
-          %figure(2,'Position',[10 10 1010 810])
-          figure(2);
-        elseif (inres == nresmax)
-          figure(1);
-          %subplot(3,4,inlim),imagesc(x,y,c);axis xy;axis([xmin xmax ymin ymax]);axis off;
-          subplot(3,4,il),contour(x,y,c,cinter);axis xy;axis([xmin xmax ymin ymax]);%axis nolabel;
-          figure(2);
-        end
-        limlab = regexprep(nlim_label(il,:), '_', '=');
-        limlab = regexprep(nlim_label(il,:), '_', '=');
-        label = sprintf('%s\n%s\ndx = %f\nTotal L_1 Err = %f\nTotal L_2 Err = %f\nMass Cons Fac = %f', ...
-           limlab,dx,L1L2errors(1),L1L2errors(2),conserv);
-
-        subplot(nresmax,4,(inres-1)*4+1),text(-0.5,0.5,label);axis([xmin xmax ymin ymax]);axis off;
-        subplot(nresmax,4,(inres-1)*4+2),imagesc(x,y,truesol);axis xy;axis([xmin xmax ymin ymax]);title('True');
-        subplot(nresmax,4,(inres-1)*4+3),imagesc(x,y,c);axis xy;axis([xmin xmax ymin ymax]);title('Calc');
-        subplot(nresmax,4,(inres-1)*4+4),imagesc(x,y,abs(err));axis xy;axis([xmin xmax ymin ymax]);title('Abs(Error)');
-
-        if (inres == nresmax)
-          ofile = sprintf('PLOTS/Solution_%s.png',  ...
-            nlim_label(il,:));
-          ofile2 = sprintf('PLOTS/Solution_%s.eps',  ...
-            nlim_label(il,:));
-          %if IsOct == 1
-          %  %print(ofile,'-color','-dpng');
-            print(ofile2,'-color','-depsc');
-          %else
-          %  print(2,'-depsc2',ofile2)
-          %end
-          close(2);
-          if (il==nlim)
-            figure(1);
-            %if IsOct == 1
-              print('PLOTS/xyz_compare.eps','-color','-depsc');
-            %else
-            %  print(1,'-depsc2','xyz_compare.eps')
-            %end
-          end
-        end
+    if (cplotsol == 1)
+      if (inres == 1)
+        figure(2);  % Figure 2 will be for the solution plots, if requested
+      elseif (inres == nresmax)
+        figure(1);
+        subplot(3,3,il),contour(x,y,c,cinter);axis xy;axis([xmin xmax ymin ymax]);axis nolabel;
+        title(nlimLegLabel(il,1:2));
+        figure(2);
       end
+      limlab = regexprep(nlim_label(il,:), '_', '=');
+      limlab = regexprep(nlim_label(il,:), '_', '=');
+      label = sprintf('%s\n%s\ndx = %f\nTotal L_1 Err = %f\nTotal L_2 Err = %f\nMass Cons Fac = %f', ...
+         limlab,dx,L1L2errors(1),L1L2errors(2),conserv);
 
+      subplot(nresmax,4,(inres-1)*4+1),text(-0.5,0.5,label);axis([xmin xmax ymin ymax]);axis off;
+      subplot(nresmax,4,(inres-1)*4+2),imagesc(x,y,truesol);axis xy;axis([xmin xmax ymin ymax]);title('True');
+      subplot(nresmax,4,(inres-1)*4+3),imagesc(x,y,c);axis xy;axis([xmin xmax ymin ymax]);title('Calc');
+      subplot(nresmax,4,(inres-1)*4+4),imagesc(x,y,abs(err));axis xy;axis([xmin xmax ymin ymax]);title('Abs(Error)');
+       % If this is the last dx, plot the solution
+      if (inres == nresmax)
+        ofile = sprintf('PLOTS/Solution_XY_%s.png',  ...
+          nlim_label(il,:));
+        print(ofile,'-color','-dpng');
+        if (il==nlim)
+          figure(1);
+          print('PLOTS/XY_compare.png','-color','-dpng');
+        end
+        close(2);
+      end
     end
 
   end
-
+end
 close(1);
+% Write out the L1 errors for each limiter
+ConvRate=zeros(nlim,1);
+ConvRate(1:nlim)=log(GlobL1Errors(1,1:nlim)./GlobL1Errors(nresmax,1:nlim))/log(resdx(1)/resdx(nresmax));
+
+ConvRate
+save TC3_ConvRate_XY.dat ConvRate;
 
 plotflags = [cploterr1, cploterr2, cplotmass];
 for iplot = 1:3
@@ -122,17 +120,17 @@ for iplot = 1:3
     if iplot==1
       plotvar = GlobL1Errors;
       title_str = 'L_1 Error';
-      out_file = 'Solution_Error_L1.eps';
+      out_file = 'Solution_XY_Error_L1.png';
       paxis = [1.0e-3 1.0e-1 1.0e-3 1.0e-1];
     elseif iplot==2
       plotvar = GlobL2Errors;
       title_str = 'L_2 Error';
-      out_file = 'Solution_Error_L2.eps';
+      out_file = 'Solution_XY_Error_L2.png';
       paxis = [1.0e-3 1.0e-1 1.0e-2 1.0e0];
     elseif iplot==3
-      plotvar = GlobalConserv;
+      plotvar = GlobMCErrors;
       title_str = 'Mass Cons. Ratio';
-      out_file = 'Solution_Error_MassCons.eps';
+      out_file = 'Solution_XY_Error_MassCons.png';
       paxis = [1.0e-3 1.0e-1 1.0e-7 1.0e-1];
     end
     figure;
@@ -190,21 +188,12 @@ for iplot = 1:3
     end
     subplot(3,4,5),loglog([1.0e-1,1.0e-2],[1.0e-2,1.0e-3],'k--')
     subplot(3,4,5),loglog([1.0e-1,1.0e-2],[1.0e-2,1.0e-4],'k:')
-    legend('None','Lax-Wen','BeamWarm','Fromm','MinMod','Superbee','MC','O(1)','O(2)','Location','northwest');
+    legend('None','Superbee','Lax-Wen','BeamWarm','Fromm','MinMod','MC','O(1)','O(2)','Location','northwest');
     grid on;
     axis([10 11 10 11]);
     axis off;
     hold off;
-
-
-
-    %if IsOct == 1
-      print(out_file,'-color','-depsc');
-      %close();
-    %else
-    %  print(1,'-depsc2',out_file);
-    %  close();
-    %end
+    print(out_file,'-color','-dpng');
   end
 end
 

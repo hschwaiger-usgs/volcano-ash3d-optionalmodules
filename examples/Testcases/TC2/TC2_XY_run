@@ -25,12 +25,12 @@ dx=(50000 25000 12500 06250 03125)
 idx=3    # Approximate duration (minutes) for 7 and 2 limiters, respectively
          #  1 :     :  
          #  2 :     ; 
-         #  3 :     ; 
+         #  3 :     ; 2m33
          #  4 :     ; 
          #  5 : 
 
 limmin=0 # index of above list starting with 0
-limmax=7
+limmax=1
 submin=1
 submax=4
 

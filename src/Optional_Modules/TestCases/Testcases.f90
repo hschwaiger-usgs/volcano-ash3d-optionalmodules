@@ -434,7 +434,6 @@
         endif
         ! Test case 2 has a wind field SubCase
         if(SubCase.eq.1)then
-!<<<<<<< HEAD
             ! Wind blows up (no fall velocity)
           vx_pd(:,:,:) =  0.0_ip
           vy_pd(:,:,:) =  0.0_ip
@@ -458,27 +457,6 @@
           vy_pd(:,:,:) =  0.0_ip
           vz_pd(:,:,:) =  0.0_ip
           vf_pd(:,:,:,:) =  -1.0_ip
-!=======
-!            ! Wind blows + (no fall velocity)
-!          vx_pd(:,:,:)  =  0.0_ip
-!          vy_pd(:,:,:)  =  0.0_ip
-!          vz_pd(:,:,:)  =  1.0_ip
-!        elseif(SubCase.eq.2)then
-!            ! Wind blows - (no fall velocity)
-!          vx_pd(:,:,:)  =  0.0_ip
-!          vy_pd(:,:,:)  =  0.0_ip
-!          vz_pd(:,:,:)  = -1.0_ip
-!        elseif(SubCase.eq.3)then
-!            ! No z wind (fall velocity +)
-!          vx_pd(:,:,:)  =  0.0_ip
-!          vy_pd(:,:,:)  =  0.0_ip
-!          vz_pd(:,:,:)  =  0.0_ip
-!        elseif(SubCase.eq.4)then
-!            ! No z wind (fall velocity -)
-!          vx_pd(:,:,:)  =  0.0_ip
-!          vy_pd(:,:,:)  =  0.0_ip
-!          vz_pd(:,:,:)  =  0.0_ip
-!>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
         endif
       endif
 
@@ -1095,11 +1073,7 @@
         do k=1,nzmax
           do j=1,nymax
             do i=1,nxmax
-              if(IsLatLon)then
-                total_mass = total_mass + concen_pd(i,j,k,n,ts0)*kappa_pd(i,j,k)
-              else
-                total_mass = total_mass + concen_pd(i,j,k,n,ts0)*dx*dy*dz_vec_pd(k)
-              ENDIf
+              total_mass = total_mass + concen_pd(i,j,k,n,ts0)*kappa_pd(i,j,k)
             enddo ! loop over i
           enddo ! loop over j
         enddo ! loop over k
@@ -1175,11 +1149,7 @@
       do k=1,nzmax
         do j=1,nymax
           do i=1,nxmax
-            !if(IsLatLon)then
-              TotalVol = TotalVol + kappa_pd(i,j,k)
-            !else
-            !  TotalVol = TotalVol + dx*dy*dz_vec_pd(k)
-            !ENDIf
+            TotalVol = TotalVol + kappa_pd(i,j,k)
           enddo ! loop over i
         enddo ! loop over j
       enddo ! loop over k
@@ -1312,7 +1282,6 @@
         write(200,*)L1_toterror,L2_toterror,MassConsError
         do i=1,nxmax
           do j=1,nymax
-            !write(201,'(2f10.5,3f12.7)')x_cc_pd(i),y_cc_pd(j),truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
             write(201,'(3f12.7)')truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
           enddo
         enddo
@@ -1382,15 +1351,16 @@
                 endif
                 err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
 
-                L1_toterror = L1_toterror + abs(err(i,j))*dx*dy*dz_vec_pd(k)
-                L2_toterror = L2_toterror + err(i,j)*err(i,j)*dx*dy*dz_vec_pd(k)
-                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*dx*dy*dz_vec_pd(k)
+                L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
+                L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
+                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
 
               enddo ! loop over i
             enddo ! loop over j
           enddo ! loop over k
         enddo ! loop over n
         ! Now account for mass conservation at boundaries
+        ! HFS Fix this to be in terms of kappa_pd(i,j,k)
         do n=1,nsmax
           do i=1,nxmax
             do j=1,nymax
@@ -1427,7 +1397,6 @@
         write(200,*)L1_toterror,L2_toterror,MassConsError
         do i=1,nxmax
           do j=1,nymax
-            !write(201,'(2f10.5,3f12.7)')x_cc(i),y_cc(j),truesol(i,j),concen(i,j,1,1,ts1),err(i,j)
             write(201,'(3f12.7)')truesol(i,j),concen_pd(i,j,1,1,ts1),err(i,j)
           enddo
         enddo
@@ -1478,9 +1447,9 @@
                 endif
                 errz(k)=truesolz(k)-concen_pd(10,10,k,1,ts1)
 
-                L1_toterror = L1_toterror + abs(errz(k))*dx*dy*dz_vec_pd(k)
-                L2_toterror = L2_toterror + errz(k)*errz(k)*dx*dy*dz_vec_pd(k)
-                MassConsError = MassConsError + concen_pd(i,j,k,1,ts1)*dx*dy*dz_vec_pd(k)
+                L1_toterror = L1_toterror + abs(errz(k))*kappa_pd(i,j,k)
+                L2_toterror = L2_toterror + errz(k)*errz(k)*kappa_pd(i,j,k)
+                MassConsError = MassConsError + concen_pd(i,j,k,1,ts1)*kappa_pd(i,j,k)
               enddo ! loop over k
             enddo
           enddo
@@ -1591,20 +1560,11 @@
                     truesol(i,j) = 1.0_ip - r/0.35_ip
                   endif
 
-!<<<<<<< HEAD
                   err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
-!=======
-!                ! Zero nearly zero concentration values since these cause problems
-!                ! when written out.
-!                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
-!                  concen_pd(i,j,k,n,ts1) = 0.0_ip
-!                endif
-!                err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
-!>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 
-                  L1_toterror = L1_toterror + abs(err(i,j))*dx*dy*dz_vec_pd(k)
-                  L2_toterror = L2_toterror + err(i,j)*err(i,j)*dx*dy*dz_vec_pd(k)
-                  MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*dx*dy*dz_vec_pd(k)
+                  L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
+                  L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
+                  MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
 
                 enddo ! loop over i
               enddo ! loop over j
@@ -1632,7 +1592,6 @@
 
       if(TestCase.eq.4)then
         ! This solution is from Carslaw and Jaeger 1959, p88        
-
         xm = 1.0
         ym = 1.0
         zm = 1.0
@@ -1690,21 +1649,9 @@
                   stop 1
                 endif
 
-!<<<<<<< HEAD
-                L1_toterror = L1_toterror + abs(err3D(i,j,k))*dx*dy*dz_vec_pd(k)
-                L2_toterror = L2_toterror + err3D(i,j,k)*err3D(i,j,k)*dx*dy*dz_vec_pd(k)
-!=======
-!                ! Zero nearly zero concentration values since these cause problems
-!                ! when written out.
-!                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
-!                  concen_pd(i,j,k,n,ts1) = 0.0_ip
-!                endif
-!                err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
-!
-!                L1_toterror = L1_toterror + abs(err(i,j))*dx*dy*dz_vec_pd(k)
-!                L2_toterror = L2_toterror + err(i,j)*err(i,j)*dx*dy*dz_vec_pd(k)
-!>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
-                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*dx*dy*dz_vec_pd(k)
+                L1_toterror = L1_toterror + abs(err3D(i,j,k))*kappa_pd(i,j,k)
+                L2_toterror = L2_toterror + err3D(i,j,k)*err3D(i,j,k)*kappa_pd(i,j,k)
+                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
 
               enddo ! loop over i
             enddo ! loop over j
@@ -1727,17 +1674,14 @@
         if (SubCase.eq.1.or.SubCase.eq.4) then
           do i=1,nxmax
             write(201,'(4f12.7)')x_cc_pd(i),tsolx(i),concen_pd(i,ly,lz,1,ts1),err3D(i,ly,lz)
-            !write(global_log,*)x_cc_pd(i),tsolx(i),concen_pd(i,ly,lz,1,ts1),err3D(i,ly,lz)
           enddo
         elseif (SubCase.eq.2.or.SubCase.eq.5) then
           do j=1,nymax
             write(201,'(4f12.7)')y_cc_pd(j),tsoly(j),concen_pd(lx,j,lz,1,ts1),err3D(lx,j,lz)
-            !write(global_log,*)y_cc_pd(j),tsoly(j),concen_pd(lx,j,lz,1,ts1),err3D(lx,j,lz)
           enddo
         elseif (SubCase.eq.3.or.SubCase.eq.6) then
           do k=1,nzmax
             write(201,'(4f12.7)')z_cc_pd(k),tsolz(k),concen_pd(lx,ly,k,1,ts1),err3D(lx,ly,k)
-            !write(global_log,*)z_cc_pd(k),tsolz(k),concen_pd(lx,ly,k,1,ts1),err3D(lx,ly,k)
           enddo
         endif
         close(200)
@@ -1760,24 +1704,11 @@
                   r = min(1.0_ip,r)
                   truesol(i,j) = 0.5_ip*(1.0_ip+cos(PI*r))
  
-!<<<<<<< HEAD
                   err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
                   
                   L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
                   L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
                   MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
-!=======
-!                ! Zero nearly zero concentration values since these cause problems
-!                ! when written out.
-!                if (abs(concen_pd(i,j,k,n,ts1)).lt.1.0e-50_ip)then
-!                  concen_pd(i,j,k,n,ts1) = 0.0_ip
-!                endif
-!                err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
-!                
-!                L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
-!                L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
-!                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
-!>>>>>>> f628dc1caa97b0b7f2f4f7e9241a5b90f92a6629
 
                 enddo ! loop over i
               enddo ! loop over j
@@ -1821,9 +1752,9 @@
 
                 err(i,j)=truesol(i,j)-concen_pd(i,j,k,n,ts1)
 
-                L1_toterror = L1_toterror + abs(err(i,j))*dx*dy*dz_vec_pd(k)
-                L2_toterror = L2_toterror + err(i,j)*err(i,j)*dx*dy*dz_vec_pd(k)
-                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*dx*dy*dz_vec_pd(k)
+                L1_toterror = L1_toterror + abs(err(i,j))*kappa_pd(i,j,k)
+                L2_toterror = L2_toterror + err(i,j)*err(i,j)*kappa_pd(i,j,k)
+                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
 
               enddo ! loop over i
             enddo ! loop over j
@@ -1858,13 +1789,10 @@
                 tsol = MMS_TrueSol(x_cc_pd(i),y_cc_pd(j),z_cc_pd(k),time)
                 err3D(i,j,k)=tsol-concen_pd(i,j,k,n,ts1)
 
-                L1_toterror = L1_toterror + abs(err3D(i,j,k))*dx*dy*dz_vec_pd(k)
-                L2_toterror = L2_toterror + err3D(i,j,k)*err3D(i,j,k)*dx*dy*dz_vec_pd(k)
-                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*dx*dy*dz_vec_pd(k)
+                L1_toterror = L1_toterror + abs(err3D(i,j,k))*kappa_pd(i,j,k)
+                L2_toterror = L2_toterror + err3D(i,j,k)*err3D(i,j,k)*kappa_pd(i,j,k)
+                MassConsError = MassConsError + concen_pd(i,j,k,n,ts1)*kappa_pd(i,j,k)
 
-                !if(abs(xcc).lt.dx*KM_2_M.and.abs(ycc).lt.dy*KM_2_M.and.k.eq.1) &
-                !  write(global_info,*)"ERROR:",i,j,truesol3D(i,j,k),concen(i,j,k,n,ts1)
-                !truesol3D(i,j,k) = tsol
               enddo ! loop over i
             enddo ! loop over j
           enddo ! loop over k

@@ -28,12 +28,12 @@ nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
 #nlim=(LIM_SUPERBEE)
 #nlim_label=(LIM_SB)
 dx=(2000 1000 0500 0250 0125)
-idx=3    # Approximate duration (minutes) for 7 and 2 limiters, respectively
-         #  1 :  16 : 4
-         #  2 :  17 ; 4.5
-         #  3 :  29 ; 7.5
-         #  4 : 130 ; 32
-         #  5 : 
+idx=4    # Approximate duration (minutes) for 7 and 2 limiters, respectively
+         #  1 :   : 
+         #  2 :   : 
+         #  3 :   : 7m29
+         #  4 :   : 
+         #  5 :   :
 
 limmin=0 # index of above list starting with 0
 limmax=1
