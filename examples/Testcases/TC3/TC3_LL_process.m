@@ -1,3 +1,4 @@
+#!/usr/local/bin/octave -qf
 clear all;
 
 IsOct    = 0;
@@ -91,12 +92,12 @@ for il = 1:nlim
       subplot(nresmax,4,(inres-1)*4+4),imagesc(x,y,abs(err));axis xy;axis([xmin xmax ymin ymax]);title('Abs(Error)');
        % If this is the last dx, plot the solution
       if (inres == nresmax)
-        ofile = sprintf('PLOTS/Solution_LL_%s.png',  ...
+        ofile = sprintf('PLOTS/TC3_LL_Solution_LL_%s.png',  ...
           nlim_label(il,:));
         print(ofile,'-color','-dpng');
         if (il==nlim)
           figure(1);
-          print('PLOTS/LL_compare.png','-color','-dpng');
+          print('PLOTS/TC3_LL_compare.png','-color','-dpng');
         end
         close(2);
       end
@@ -109,8 +110,7 @@ close(1);
 ConvRate=zeros(nlim,1);
 ConvRate(1:nlim)=log(GlobL1Errors(1,1:nlim)./GlobL1Errors(nresmax,1:nlim))/log(resdx(1)/resdx(nresmax));
 
-ConvRate
-save TC3_ConvRate_LL.dat ConvRate;
+save ("-ascii","DATA/TC3_ConvRate_LL.dat","ConvRate")
 
 plotflags = [cploterr1, cploterr2, cplotmass];
 for iplot = 1:3
@@ -118,17 +118,17 @@ for iplot = 1:3
     if iplot==1
       plotvar = GlobL1Errors;
       title_str = 'L_1 Error';
-      out_file = 'Solution_LL_Error_L1.png';
+      out_file = 'PLOTS/TC3_LL_Solution_Error_L1.png';
       paxis = [1.0e-3 1.0e-1 1.0e-3 1.0e-1];
     elseif iplot==2
       plotvar = GlobL2Errors;
       title_str = 'L_2 Error';
-      out_file = 'Solution_LL_Error_L2.png';
+      out_file = 'PLOTS/TC3_LL_Solution_Error_L2.png';
       paxis = [1.0e-3 1.0e-1 1.0e-2 1.0e0];
     elseif iplot==3
       plotvar = GlobMCErrors;
       title_str = 'Mass Cons. Ratio';
-      out_file = 'Solution_LL_Error_MassCons.png';
+      out_file = 'PLOTS/TC3_LL_Solution_Error_MassCons.png';
       paxis = [1.0e-3 1.0e-1 1.0e-7 1.0e-1];
     end
     figure;

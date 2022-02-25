@@ -1,3 +1,4 @@
+#!/usr/local/bin/octave -qf
 clear all;
 
 % Load parameters from run script
@@ -113,5 +114,5 @@ for subcase = submin:submax
  imgfile = sprintf('PLOTS/TC1_LL_Sub%i.png',subcase);
  print (hf, imgfile, "-dpng");
 end
-ConvRate
-save TC1_ConvRate_LL.dat ConvRate;
+save ("-ascii","DATA/TC1_ConvRate_LL.dat","ConvRate")
+

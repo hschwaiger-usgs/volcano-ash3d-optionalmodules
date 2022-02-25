@@ -1,0 +1,87 @@
+#!/bin/bash
+
+ASH3DROOT="../../.."
+WRKDIR="${ASH3DROOT}/src"
+ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
+TESTCASE=4
+export TESTCASE
+ASH3DCFL=0.99
+export ASH3DCFL
+
+# Subcases
+sub=(0 1 2 3 4 5 6)
+# Diffusion
+#  subcase 1 : Explicit Diffusion in x
+#        Domain = -1.0 < x < 1.0 ; -1.0 < y < 1.0 ; 0 < z < 0.025
+#  subcase 2 : Explicit Diffusion in y
+#        Domain = -1.0 < x < 1.0 ; -1.0 < y < 1.0 ; 0 < z < 0.025
+#  subcase 3 : Explicit Diffusion in z
+#        Domain = -0.25 < x < 0.25 ; -0.25 < y < 0.25 ; 0 < z < 2.0
+#  subcase 4 : Crank-Nicolson in x
+#        Domain = -1.0 < x < 1.0 ; -1.0 < y < 1.0 ; 0 < z < 0.025
+#  subcase 5 : Crank-Nicolson in y
+#        Domain = -1.0 < x < 1.0 ; -1.0 < y < 1.0 ; 0 < z < 0.025
+#  subcase 6 : Crank-Nicolson in z
+#        Domain = -0.25 < x < 0.25 ; -0.25 < y < 0.25 ; 0 < z < 2.0
+
+nmeth=(NA EXPLDIFF EXPLDIFF EXPLDIFF CRANKNIC CRANKNIC CRANKNIC)
+dx=(50000 25000 12500 06250 03125)
+idx=3    # Approximate duration (minutes) for running all 6 subcases
+         #  1 :
+         #  2 :
+         #  3 :
+         #  4 :
+         #  5 :
+
+submin=1
+submax=6
+
+echo "$idx" > TC4_XY_idx.dat
+echo "$submin $submax" > TC4_XY_sub.dat
+
+echo "*********************************************************"
+echo "Running finite-volume cases (Diffusion)"
+echo "*********************************************************"
+
+mkdir -p DATA
+for (( is=$submin;is<=$submax;is++))
+do
+ pushd ${WRKDIR}
+ DIFFMETH=${nmeth[is]}
+ export DIFFMETH
+ SUBCASE=${sub[is]}
+ export SUBCASE
+ make -f makefile_optmod clean
+ make -f makefile_optmod
+ popd
+ for (( k=0;k<idx;k++))
+ do
+  echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  echo $k ' of ' ${idx}
+  echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  if [ "${is}" -lt "3" ] ; then
+    ${ASH3D} TC${TESTCASE}_${dx[k]}.inp
+  elif [ "${is}" -eq "3" ] ; then
+    ${ASH3D} TC${TESTCASE}z_${dx[k]}.inp
+  elif [ "${is}" -lt "6" ] ; then
+    ${ASH3D} TC${TESTCASE}_${dx[k]}.inp
+  elif [ "${is}" -eq "6" ] ; then
+    ${ASH3D} TC${TESTCASE}z_${dx[k]}.inp
+  fi
+  status=$?
+  if [ $status -ne 0 ]; then
+     echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
+     exit
+   else
+    cp Ash3d.lst Ash3d_Sub${sub[is]}_${dx[k]}.lst
+    mv 3d_tephra_fall_2010041400.00.dat DATA/TC${TESTCASE}_XY_Sub${sub[is]}_${dx[k]}_1.dat
+    mv 3d_tephra_fall_2010041400.01.dat DATA/TC${TESTCASE}_XY_Sub${sub[is]}_${dx[k]}_2.dat
+    mv 3d_tephra_fall_2010041400.10.dat DATA/TC${TESTCASE}_XY_Sub${sub[is]}_${dx[k]}_3.dat
+    mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${dx[k]}_err.dat
+    mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${dx[k]}_sol.dat
+    grep Execution Ash3d.lst | grep -v CPU > tmp.txt
+    cut -c 35-48 tmp.txt >> etime.dat
+  fi
+ done
+done
+

@@ -2,11 +2,11 @@
 clear all;
 
 IsOct    = 0;
-TestCase = 3;
+TestCase = 5;
 
 % Load parameters from run script
-nresmax = load('TC3_XY_idx.dat');
-datlim  = load('TC3_XY_lim.dat');
+nresmax = load('TC5_LL_idx.dat');
+datlim  = load('TC5_LL_lim.dat');
 limmin=datlim(1)+1;
 limmax=datlim(2)+1;
 
@@ -17,19 +17,19 @@ cploterr1 = 1; % Plot L1 error
 cploterr2 = 0; % Plot L2 error
 cplotmass = 1; % Plot Mass Consv error
 
-resdx = [0.05000 0.025000 0.012500 0.006250 0.003125];
-resnx = [40 80 160 320 640];
-resny = [40 80 160 320 640];
+resdx = [2.0000 1.0000 0.500 0.250 0.125];
+resnx = [36 72 144 288 576];
+resny = [36 72 144 288 576];
 
 nlim = limmax-limmin+1;
 nlim_label = char('LIM_NO','LIM_SB','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_MC');
 nlimLegLabel=char('NO','SB','LW','BW','FM','MM','MC');
-nres  = char('50000','25000','12500','06250','03125');
+nres  = char('2000','1000','0500','0250','0125');
 
-xmin = -1.0;
-xmax =  1.0;
-ymin = -1.0;
-ymax =  1.0;
+xmin = 324.0;
+xmax = 396.0;
+ymin = -36.0;
+ymax =  36.0;
 
 GlobL1Errors  = zeros(nresmax,nlim);
 GlobL2Errors  = zeros(nresmax,nlim);
@@ -42,22 +42,20 @@ figure(1);  % Figure 1 will be for the final contour plot of the individual runs
 for il = 1:nlim
   for inres = 1:nresmax
 
-    ifile = sprintf('DATA/TC%i_XY_%s_%s_sol.dat',  ...
+    ifile = sprintf('DATA/TC%i_LL_%s_%s_sol.dat',  ...
         TestCase,nlim_label(il,:),nres(inres,:));
-    ierfile = sprintf('DATA/TC%i_XY_%s_%s_err.dat',  ...
+    ierfile = sprintf('DATA/TC%i_LL_%s_%s_err.dat',  ...
         TestCase,nlim_label(il,:),nres(inres,:));
-    itimefile = sprintf('DATA/TC%i_XY_%s_etime.dat',  ...
+    itimefile = sprintf('DATA/TC%i_LL_%s_etime.dat',  ...
         TestCase,nlim_label(il,:));
 
     dx = resdx(inres);
     nx = resnx(inres);
     ny = resny(inres);
 
-    x_res = linspace(-1.0+0.5*dx,1.0-0.5*dx,nx);
-    y_res = linspace(-1.0+0.5*dx,1.0-0.5*dx,ny);
-    [xg yg] = meshgrid(x_res,y_res);
-    x =  xg(1,:);
-    y =  yg(:,1);
+    x_res = linspace(xmin,xmax,nx);
+    y_res = linspace(ymin,ymax,ny);
+    [x y] = meshgrid(x_res,y_res);
 
     % Reading in solution file with columns of "true","calc","err"
     data = load(ifile);
@@ -94,12 +92,12 @@ for il = 1:nlim
       subplot(nresmax,4,(inres-1)*4+4),imagesc(x,y,abs(err));axis xy;axis([xmin xmax ymin ymax]);title('Abs(Error)');
        % If this is the last dx, plot the solution
       if (inres == nresmax)
-        ofile = sprintf('PLOTS/TC3_XY_Solution_XY_%s.png',  ...
+        ofile = sprintf('PLOTS/TC5_LL_Solution_LL_%s.png',  ...
           nlim_label(il,:));
         print(ofile,'-color','-dpng');
         if (il==nlim)
           figure(1);
-          print('PLOTS/TC3_XY_compare.png','-color','-dpng');
+          print('PLOTS/TC5_LL_compare.png','-color','-dpng');
         end
         close(2);
       end
@@ -111,7 +109,8 @@ close(1);
 % Write out the L1 errors for each limiter
 ConvRate=zeros(nlim,1);
 ConvRate(1:nlim)=log(GlobL1Errors(1,1:nlim)./GlobL1Errors(nresmax,1:nlim))/log(resdx(1)/resdx(nresmax));
-save ("-ascii","DATA/TC3_ConvRate_XY.dat","ConvRate")
+
+save ("-ascii","DATA/TC5_ConvRate_LL.dat","ConvRate")
 
 plotflags = [cploterr1, cploterr2, cplotmass];
 for iplot = 1:3
@@ -119,17 +118,17 @@ for iplot = 1:3
     if iplot==1
       plotvar = GlobL1Errors;
       title_str = 'L_1 Error';
-      out_file = 'PLOTS/TC3_XY_Solution_Error_L1.png';
+      out_file = 'PLOTS/TC5_LL_Solution_Error_L1.png';
       paxis = [1.0e-3 1.0e-1 1.0e-3 1.0e-1];
     elseif iplot==2
       plotvar = GlobL2Errors;
       title_str = 'L_2 Error';
-      out_file = 'PLOTS/TC3_XY_Solution_Error_L2.png';
+      out_file = 'PLOTS/TC5_LL_Solution_Error_L2.png';
       paxis = [1.0e-3 1.0e-1 1.0e-2 1.0e0];
     elseif iplot==3
       plotvar = GlobMCErrors;
       title_str = 'Mass Cons. Ratio';
-      out_file = 'PLOTS/TC3_XY_Solution_Error_MassCons.png';
+      out_file = 'PLOTS/TC5_LL_Solution_Error_MassCons.png';
       paxis = [1.0e-3 1.0e-1 1.0e-7 1.0e-1];
     end
     figure;
@@ -154,8 +153,9 @@ for iplot = 1:3
       subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-+c')
     end
 
-    subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-3],'k-')
-    subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-5],'k-')
+    subplot(1,2,2),loglog([1.0e1,1.0e0],[1.0e-1,1.0e-2],'k-')
+    subplot(1,2,2),loglog([1.0e1,1.0e0],[1.0e-1,1.0e-3],'k-')
+
     grid off;
     xlabel('dx');
     title(title_str);
@@ -185,8 +185,10 @@ for iplot = 1:3
     if nlim > 6
       subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-+c')
     end
-    subplot(3,4,5),loglog([1.0e-1,1.0e-2],[1.0e-2,1.0e-3],'k--')
-    subplot(3,4,5),loglog([1.0e-1,1.0e-2],[1.0e-2,1.0e-4],'k:')
+
+    subplot(3,4,5),loglog([1.0e1,1.0e-1],[1.0e0,1.0e-2],'k--')
+    subplot(3,4,5),loglog([1.0e1,1.0e-1],[1.0e0,1.0e-3],'k:')
+
     legend('None','Superbee','Lax-Wen','BeamWarm','Fromm','MinMod','MC','O(1)','O(2)','Location','northwest');
     grid on;
     axis([10 11 10 11]);

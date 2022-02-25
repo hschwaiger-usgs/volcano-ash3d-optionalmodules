@@ -1,9 +1,29 @@
 #!/bin/bash
 
+# We want to be able to set the number of limiters and number of dx levels globally
+# through environment levels for easy scripting.  Two limiters (None, and SuperBee) and
+# three dx levels is the default for quick execution.  These can be changed by
+# uncommenting the section below.
+#
+#  Check for limiter number passed as environment variable on command-line:
+if [ -z ${limmax+x} ]; then echo "Setting limmax to 1"; limmax=1; else echo "limmax is set to '$limmax'"; fi
+
+#  Check for idx passed as environment variable on command-line:
+if [ -z ${idx+x} ]; then echo "Setting idx to 3"; idx=3; else echo "idx is set to '$idx'"; fi
+# Approximate duration (minutes) for 7 and 2 limiters, respectively
+#  1 :     :  4m31
+#  2 :     :  4m28
+#  3 :     :  4m38
+#  4 :     :  5m54
+#  5 :     : 14m47
+
+#  Uncomment here if you want to over-ride these values
+# idx=1
+# limmax=4
+
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
 ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
-#ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
 TESTCASE=1
 export TESTCASE
 ASH3DCFL=0.99
@@ -26,27 +46,20 @@ sub=(0 1 2 3 4 5 6 7 8)
 nlim=(LIM_NONE LIM_SUPERBEE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_MC)
 nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
 dx=(50000 25000 12500 06250 03125)
-idx=3    # Approximate duration (minutes) for 7 and 2 limiters, respectively
-         #  1 :     :  4m31
-         #  2 :     :  4m28
-         #  3 :     :  4m38
-         #  4 :     :  5m54
-         #  5 :     : 14m47
 
 limmin=0 # index of above list starting with 0
-limmax=7
 submin=1 # note the that index 0 is a dummy slot
 submax=8
 
-echo "$idx" > TC1_XY_idx.dat
-echo "$limmin $limmax" > TC1_XY_lim.dat
-echo "$submin $submax" > TC1_XY_sub.dat
+echo "$idx" > TC${TESTCASE}_XY_idx.dat
+echo "$limmin $limmax" > TC${TESTCASE}_XY_lim.dat
+echo "$submin $submax" > TC${TESTCASE}_XY_sub.dat
 
 echo "*********************************************************"
 echo "Running finite-volume cases (DCU)"
 echo "*********************************************************"
 
-mkdir -p DATA
+mkdir -p DATA PLOTS
 for (( is=$submin;is<=$submax;is++))
 do
  for (( il=$limmin;il<=$limmax;il++))
@@ -75,6 +88,7 @@ do
       mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
       mv TC${TESTCASE}_Sub${SUBCASE}_St1_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_sol.dat
       mv TC${TESTCASE}_Sub${SUBCASE}_St2_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_sol.dat
+      grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_etime.dat
       rm 3d_tephra_fall*dat
    fi
    echo "-------------------------------------------------------------------------"

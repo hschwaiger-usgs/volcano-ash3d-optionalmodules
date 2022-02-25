@@ -2,11 +2,11 @@
 clear all;
 
 IsOct    = 0;
-TestCase = 3;
+TestCase = 5;
 
 % Load parameters from run script
-nresmax = load('TC3_XY_idx.dat');
-datlim  = load('TC3_XY_lim.dat');
+nresmax = load('TC5_XY_idx.dat');
+datlim  = load('TC5_XY_lim.dat');
 limmin=datlim(1)+1;
 limmax=datlim(2)+1;
 
@@ -17,14 +17,14 @@ cploterr1 = 1; % Plot L1 error
 cploterr2 = 0; % Plot L2 error
 cplotmass = 1; % Plot Mass Consv error
 
-resdx = [0.05000 0.025000 0.012500 0.006250 0.003125];
+resdx = [0.025000 0.012500 0.006250 0.003125 0.0015625];
 resnx = [40 80 160 320 640];
 resny = [40 80 160 320 640];
 
 nlim = limmax-limmin+1;
 nlim_label = char('LIM_NO','LIM_SB','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_MC');
 nlimLegLabel=char('NO','SB','LW','BW','FM','MM','MC');
-nres  = char('50000','25000','12500','06250','03125');
+nres  = char('250000','125000','062500','031250','015625');
 
 xmin = -1.0;
 xmax =  1.0;
@@ -94,12 +94,12 @@ for il = 1:nlim
       subplot(nresmax,4,(inres-1)*4+4),imagesc(x,y,abs(err));axis xy;axis([xmin xmax ymin ymax]);title('Abs(Error)');
        % If this is the last dx, plot the solution
       if (inres == nresmax)
-        ofile = sprintf('PLOTS/TC3_XY_Solution_XY_%s.png',  ...
+        ofile = sprintf('PLOTS/TC5_XY_Solution_XY_%s.png',  ...
           nlim_label(il,:));
         print(ofile,'-color','-dpng');
         if (il==nlim)
           figure(1);
-          print('PLOTS/TC3_XY_compare.png','-color','-dpng');
+          print('PLOTS/TC5_XY_compare.png','-color','-dpng');
         end
         close(2);
       end
@@ -111,7 +111,8 @@ close(1);
 % Write out the L1 errors for each limiter
 ConvRate=zeros(nlim,1);
 ConvRate(1:nlim)=log(GlobL1Errors(1,1:nlim)./GlobL1Errors(nresmax,1:nlim))/log(resdx(1)/resdx(nresmax));
-save ("-ascii","DATA/TC3_ConvRate_XY.dat","ConvRate")
+
+save ("-ascii","DATA/TC5_ConvRate_XY.dat","ConvRate")
 
 plotflags = [cploterr1, cploterr2, cplotmass];
 for iplot = 1:3
@@ -119,17 +120,17 @@ for iplot = 1:3
     if iplot==1
       plotvar = GlobL1Errors;
       title_str = 'L_1 Error';
-      out_file = 'PLOTS/TC3_XY_Solution_Error_L1.png';
+      out_file = 'PLOTS/TC5_XY_Solution_Error_L1.png';
       paxis = [1.0e-3 1.0e-1 1.0e-3 1.0e-1];
     elseif iplot==2
       plotvar = GlobL2Errors;
       title_str = 'L_2 Error';
-      out_file = 'PLOTS/TC3_XY_Solution_Error_L2.png';
+      out_file = 'PLOTS/TC5_XY_Solution_Error_L2.png';
       paxis = [1.0e-3 1.0e-1 1.0e-2 1.0e0];
     elseif iplot==3
       plotvar = GlobMCErrors;
       title_str = 'Mass Cons. Ratio';
-      out_file = 'PLOTS/TC3_XY_Solution_Error_MassCons.png';
+      out_file = 'PLOTS/TC5_XY_Solution_Error_MassCons.png';
       paxis = [1.0e-3 1.0e-1 1.0e-7 1.0e-1];
     end
     figure;

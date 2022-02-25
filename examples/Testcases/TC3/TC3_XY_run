@@ -1,40 +1,53 @@
 #!/bin/bash
 
+# We want to be able to set the number of limiters and number of dx levels globally
+# through environment levels for easy scripting.  Two limiters (None, and SuperBee) and
+# three dx levels is the default for quick execution.  These can be changed by
+# uncommenting the section below.
+#
+#  Check for limiter number passed as environment variable on command-line:
+if [ -z ${limmax+x} ]; then echo "Setting limmax to 1"; limmax=1; else echo "limmax is set to '$limmax'"; fi
+
+#  Check for idx passed as environment variable on command-line:
+if [ -z ${idx+x} ]; then echo "Setting idx to 3"; idx=3; else echo "idx is set to '$idx'"; fi
+# Approximate duration (minutes) for 7 and 2 limiters, respectively
+#  1 :     :
+#  2 :     :
+#  3 :     :
+#  4 :     :
+#  5 :     :
+
+#  Uncomment here if you want to over-ride these values
+# idx=1
+# limmax=4
+
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
 ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
-#ASH3D="${ASH3DROOT}/bin/Ash3d_TC_debug"
 TESTCASE=3
 export TESTCASE
 ASH3DCFL=0.99
 export ASH3DCFL
 
 # Subcases
-#  Only one case: Rigid rotation of block and cone concentration
+#  Only one subcase: Rigid rotation of block and cone concentration
 
 # Current limiter options
 #      LIM_NONE,LIM_SUPERBEE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_MC
 nlim=(LIM_NONE LIM_SUPERBEE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_MC)
 nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
 dx=(50000 25000 12500 06250 03125)
-idx=3    # Approximate duration (minutes) for 7 and 2 limiters, respectively
-         #  1 :     :  
-         #  2 :     : 
-         #  3 :     : 2m21
-         #  4 :     : 
-         #  5 : 
 
 limmin=0 # index of above list starting with 0
-limmax=6
 
-echo "$idx" > TC3_XY_idx.dat
-echo "$limmin $limmax" > TC3_XY_lim.dat
+echo "$idx" > TC${TESTCASE}_XY_idx.dat
+echo "$limmin $limmax" > TC${TESTCASE}_XY_lim.dat
 
 echo "*********************************************************"
 echo "Running finite-volume cases (DCU)"
 echo "*********************************************************"
 
-mkdir -p DATA
+mkdir -p DATA PLOTS
 for (( il=$limmin;il<=$limmax;il++))
 do
  pushd ${WRKDIR}
@@ -47,7 +60,7 @@ do
  for (( k=0;k<idx;k++))
  do
   echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  echo $il ' of ' ${limmas} ' , ' $k ' of ' ${idx}
+  echo $il ' of ' ${limmax} ' , ' $k ' of ' ${idx}
   echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
   ${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp
   status=$?

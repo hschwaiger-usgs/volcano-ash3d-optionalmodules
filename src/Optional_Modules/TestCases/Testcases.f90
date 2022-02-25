@@ -511,8 +511,7 @@
           do i=-1,nxmax+2
             do j=-1,nymax+2
               do k=-1,nzmax+2
-                ! Omega is a function of the distance from the pole of
-                ! rotation
+                ! Omega is a function of the distance from the pole of rotation
                 dist = sqrt((lon_cc_pd(i)-lon_pole)**2.0_ip + &
                             (lat_cc_pd(j)-lat_pole)**2.0_ip)
                   ! This gives a maximum of 1rev/2hours
@@ -530,10 +529,6 @@
                 call set_LL_wind(lon_cc_pd(i),lat_cc_pd(j),z_cc_pd(k),  &
                                  lon_pole,lat_pole,omega,        &
                                ve_out,vn_out)
-                !if(k.eq.1.and.(i.ge.1.and.i.le.nxmax) &
-                !         .and.(j.ge.1.and.j.le.nymax))then
-                !  write(global_info,*)gridlon(i),gridlat(j),vx(i,j,k),vy(i,j,k)
-                !endif
               enddo
             enddo
           enddo

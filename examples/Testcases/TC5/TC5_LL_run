@@ -24,13 +24,13 @@ if [ -z ${idx+x} ]; then echo "Setting idx to 3"; idx=3; else echo "idx is set t
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
 ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
-TESTCASE=3
+TESTCASE=5
 export TESTCASE
 ASH3DCFL=0.99
 export ASH3DCFL
 
 # Subcases
-#  Only one case: Rigid rotation of block and cone concentration
+#  Only one case: Horizontal shear rotation of smooth concentration peak
 
 # Current limiter options
 #      LIM_NONE,LIM_SUPERBEE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_MC
