@@ -1,3 +1,4 @@
+#!/usr/local/bin/octave -qf
 clear all;
 
 % Load parameters from run script
@@ -50,7 +51,7 @@ for subcase = submin:submax
 end
 
 % Write out the L1 errors for each subcase
-ConvRate=zeros(1,submax);
+ConvRate=zeros(submax,1);
 hf = figure;
 for subcase = submin:submax
  ConvRate(subcase)=log(GlobL1Errors1(subcase,1)./GlobL1Errors1(subcase,nresmax))/log(resdx(1)/resdx(nresmax));
@@ -61,7 +62,7 @@ for subcase = submin:submax
  length = 2.0;
  xm = 0.0;
  res = length/resdx(nresmax)+1;
- % Here are the material properties and initial ocnditions for the 1-d diffusion
+ % Here are the material properties and initial conditions for the 1-d diffusion
  % problem.  This must be the same as in Optional_Modules/TestCases/Testcases.f90
  %     real(kind=ip) :: TC4_conc_1 = 1.0_ip  ! in kg/km3
  %     real(kind=ip) :: TC4_conc_2 = 0.0_ip  ! in kg/km3
@@ -96,11 +97,10 @@ for subcase = submin:submax
  grid on
  legend('true','calc')
 
- imgfile = sprintf('PLOTS/TC4_XY_solution_Sub%i.png',subcase);
+ imgfile = sprintf('PLOTS/TC4_XY_Solution_Sub%i.png',subcase);
  print (hf, imgfile, "-dpng");
 end
-ConvRate
-save TC4_ConvRate_XY.dat ConvRate;
+save ("-ascii","DATA/TC4_ConvRate_XY.dat","ConvRate")
 
  clf;
  Ox=1.0e-1;

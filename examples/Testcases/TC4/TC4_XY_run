@@ -1,5 +1,27 @@
 #!/bin/bash
 
+# We want to be able to set the number of limiters and number of dx levels globally
+# through environment levels for easy scripting.  Two limiters (None, and SuperBee) and
+# three dx levels is the default for quick execution.  These can be changed by
+# uncommenting the section below.
+#
+#  Check for limiter number passed as environment variable on command-line:
+if [ -z ${limmax+x} ]; then echo "Setting limmax to 1"; limmax=1; else echo "limmax is set to '$limmax'"; fi
+#     NOTE: limiters are not used for the diffusion routines.  limmax is ignored
+
+#  Check for idx passed as environment variable on command-line:
+if [ -z ${idx+x} ]; then echo "Setting idx to 3"; idx=3; else echo "idx is set to '$idx'"; fi
+# Approximate duration (minutes) for 7 and 2 limiters, respectively
+#  1 :     :
+#  2 :     :
+#  3 :     :
+#  4 :     :
+#  5 :     :
+
+#  Uncomment here if you want to over-ride these values
+# idx=1
+# limmax=4
+
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
 ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
@@ -26,24 +48,18 @@ sub=(0 1 2 3 4 5 6)
 
 nmeth=(NA EXPLDIFF EXPLDIFF EXPLDIFF CRANKNIC CRANKNIC CRANKNIC)
 dx=(50000 25000 12500 06250 03125)
-idx=3    # Approximate duration (minutes) for running all 6 subcases
-         #  1 :
-         #  2 :
-         #  3 :
-         #  4 :
-         #  5 :
 
 submin=1
 submax=6
 
-echo "$idx" > TC4_XY_idx.dat
-echo "$submin $submax" > TC4_XY_sub.dat
+echo "$idx" > TC${TESTCASE}_XY_idx.dat
+echo "$submin $submax" > TC${TESTCASE}_XY_sub.dat
 
 echo "*********************************************************"
 echo "Running finite-volume cases (Diffusion)"
 echo "*********************************************************"
 
-mkdir -p DATA
+mkdir -p DATA PLOTS
 for (( is=$submin;is<=$submax;is++))
 do
  pushd ${WRKDIR}
@@ -79,8 +95,7 @@ do
     mv 3d_tephra_fall_2010041400.10.dat DATA/TC${TESTCASE}_XY_Sub${sub[is]}_${dx[k]}_3.dat
     mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${dx[k]}_err.dat
     mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${dx[k]}_sol.dat
-    grep Execution Ash3d.lst | grep -v CPU > tmp.txt
-    cut -c 35-48 tmp.txt >> etime.dat
+    grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
   fi
  done
 done

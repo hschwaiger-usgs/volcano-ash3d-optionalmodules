@@ -1,2 +1,2 @@
-rm 3d_tephra_* Ash3d.lst progress.txt DATA/TC*dat PLOTS/*png TC5_XY_process TC5_LL_process
+rm 3d_tephra_* Ash3d.lst progress.txt TC*.dat DATA/TC*dat PLOTS/*png TC5_XY_process TC5_LL_process
 
