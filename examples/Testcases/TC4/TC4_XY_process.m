@@ -114,6 +114,7 @@ save ("-ascii","DATA/TC4_ConvRate_XY.dat","ConvRate")
  Ermin=1.0e-16;
  Ermax=1.0e-0;
 
+
  subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--');hold on;
  subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
  subplot(2,3,1),loglog(resdx(1:nresmax)',GlobL1Errors1(1:nsub,1:nresmax)');axis([dxmin dxmax L1min L1max]);hold off;

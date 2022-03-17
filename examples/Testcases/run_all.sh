@@ -3,6 +3,9 @@ TestcasesDir=`pwd`
 il=1 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
 ix=3 # 5 is the max coded but that takes overnight
 
+#il=6 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
+#ix=5 # 5 is the max coded but that takes overnight
+
 cd ${TestcasesDir}/TC1
 limmax=$il idx=$ix time ./TC1_XY_run
 ln -s TC1_XY_process.m TC1_XY_process
@@ -37,6 +40,7 @@ limmax=$il idx=$ix time ./TC5_LL_run
 ln -s TC5_LL_process.m TC5_LL_process
 ./TC5_LL_process
 
+cd ${TestcasesDir}
 echo "------------------------------------------------------------------------------"
 echo "     Test Case 1: Horizontal advection"
 echo "------------------------------------------------------------------------------"

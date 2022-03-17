@@ -193,15 +193,15 @@
       SubCase = 8
 #endif
 
-#ifdef TESTCASE_4
+!#ifdef TESTCASE_4
       ! Diffusion
-      if (SubCase.gt.3)then
-        ! For CN integrations with no advection, we need to specify the
-        ! time step explicitly
-        DT_MIN    = 1.0e-5_ip
-        DT_MAX    = 1.0e-5_ip
-      endif
-#endif
+      !if (SubCase.gt.3)then
+      !  ! For CN integrations with no advection, we need to specify the
+      !  ! time step explicitly
+      !  DT_MIN    = 1.0e-5_ip
+      !  DT_MAX    = 1.0e-5_ip
+      !endif
+!#endif
 
       write(global_info,*)"       TestCase = ",TestCase
       write(global_info,*)"        SubCase = ",SubCase

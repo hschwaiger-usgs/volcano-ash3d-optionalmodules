@@ -87,7 +87,7 @@ do
   status=$?
   if [ $status -ne 0 ]; then
      echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
-     exit
+     #exit
    else
     cp Ash3d.lst Ash3d_Sub${sub[is]}_${dx[k]}.lst
     mv 3d_tephra_fall_2010041400.00.dat DATA/TC${TESTCASE}_XY_Sub${sub[is]}_${dx[k]}_1.dat

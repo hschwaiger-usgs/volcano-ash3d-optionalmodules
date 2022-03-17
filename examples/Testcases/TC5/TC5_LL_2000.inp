@@ -46,8 +46,8 @@ no             # write ASCII file of cloud arrival times?
 no             # Write KML file of cloud arrival times?
 yes            # Print out 3-D ash concentration at specified times?                (Write3dFiles)                
 ascii          # format of ash concentration files                              ('ascii', 'binary', or 'netcdf')
-1              # nWriteTimes
-4.0            # WriteTimes (hours since eruption start)
+-1              # nWriteTimes
+2.0            # WriteTimes (hours since eruption start)
 *******************************************************************************
 #WIND INPUT FILES
 *******************************************************************************

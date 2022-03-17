@@ -95,8 +95,8 @@ no              #Write out KML files of ash-cloud height at specified times?    
 no              #Write out KML files of ash-cloud load (T/km2) at specified times?  (WriteKMLCloudLoad)
 yes             #Print out 3-D ash concentration at specified times?                (Write3dFiles)                
 ascii           #format of ash concentration files                              ('ascii', 'binary', or 'netcdf')
-1              #nWriteTimes
-5.0               #WriteTimes (hours since eruption start)
+-1              #nWriteTimes
+2.5               #WriteTimes (hours since eruption start)
 *******************************************************************************
 #WIND INPUT FILES
 #The following block of data contains names of wind files.
