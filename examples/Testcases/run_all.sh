@@ -61,7 +61,7 @@ cat TC3/DATA/TC3_ConvRate_XY.dat
 echo "        LL"
 cat TC3/DATA/TC3_ConvRate_LL.dat
 echo "------------------------------------------------------------------------------"
-echo "     Test Case 4: Diffusion (Expl. and Crank-Nic."
+echo "     Test Case 4: Diffusion (Expl. and Crank-Nic.)"
 echo "------------------------------------------------------------------------------"
 echo "        XY"
 cat TC4/DATA/TC4_ConvRate_XY.dat

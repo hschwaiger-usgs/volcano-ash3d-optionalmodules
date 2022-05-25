@@ -7,13 +7,13 @@
       use global_param,  only : &
          useCalcFallVel,useDiffusion,useHorzAdvect,useVertAdvect,VERB,&
          HR_2_S,useTemperature,DT_MIN,CFL,KM3_2_M3,EPS_TINY,EPS_SMALL,&
-         nmods,OPTMOD_names
+         nmods,OPTMOD_names,StopConditions,CheckConditions
 
       use mesh,          only : &
          ivent,jvent,nxmax,nymax,nzmax,nsmax,ts0,ts1,kappa_pd
 
       use solution,      only : &
-         concen_pd,DepositGranularity,StopValue,dep_percent_accumulated, &
+         concen_pd,DepositGranularity,StopValue,aloft_percent_remaining, &
          SourceCumulativeVol,dep_vol,aloft_vol,outflow_vol,tot_vol
 
       use Output_Vars,   only : &
@@ -80,7 +80,6 @@
       real(kind=ip)         :: avgcon        ! avg concen of cells in umbrella
       real(kind=ip)         :: Interval_Frac
       logical               :: Load_MesoSteps
-      logical, dimension(5) :: StopConditions = .false.
       logical               :: StopTimeLoop   = .false.
       logical               :: first_time     = .true.
       character(len=130)    :: tmp_str
@@ -100,8 +99,7 @@
           logical      ,intent(out) :: Load_MesoSteps
           logical      ,intent(in)  :: first_time
         end subroutine
-!        subroutine Adjust_DT
-!        end subroutine
+         ! We do need to call Adjust_DT from this top-level file
         subroutine Adjust_DT(mesostep)
           logical, intent(in), optional :: mesostep
         end subroutine
@@ -143,7 +141,7 @@
           "CFL condition : ",CFL
       endif
 
-      dep_percent_accumulated = 0.0_ip
+      aloft_percent_remaining = 1.0_ip
       SourceCumulativeVol     = 0.0_ip
 
       call cpu_time(t0) !time is a scaler real
@@ -175,7 +173,9 @@
 !------------------------------------------------------------------------------
 
         ! Read airports/POI and allocate/initilize arrays
-      if (WriteAirportFile_ASCII.or.WriteAirportFile_KML) &
+        ! We only need to do this if an output variable demands it since this is
+        ! a burden every time step
+      if(Output_every_TS) &
         call ReadAirports
 
       call alloc_arrays
@@ -322,9 +322,6 @@
         call Adjust_DT(.false.)
 #endif
 !------------------------------------------------------------------------------
-
-!        call Adjust_DT
-
         if(VERB.gt.1)write(global_info,*)"Ash3d: Calling MassFluxCalculator"
 #ifndef TESTCASES
         call MassFluxCalculator         ! call subroutine that determines mass flux & plume height
@@ -339,7 +336,6 @@
         ! Add source term
         ! erupt ash into column
         if(MassFluxRate_now.gt.0.0_ip) then
-
           ! Check if the source type is one of the standard types
           if ((SourceType.eq.'point')  .or. &
               (SourceType.eq.'line')   .or. &
@@ -349,6 +345,7 @@
               (SourceType.eq.'umbrella_air'))then
             ! Calculating the flux at the source nodes
             call TephraSourceNodes
+
             ! Now integrate the ash concentration with the SourceNodeFlux
             if (SourceType.eq.'umbrella'.or. &
                (SourceType.eq.'umbrella_air')) then
@@ -376,7 +373,7 @@
                   enddo
                 enddo
               enddo
-            else
+            else ! (SourceType.eq.'umbrella' or 'umbrella_air')
               ! All other standard source types (point,line,profile, suzuki) are
               ! integrated as follows.
               concen_pd(ivent,jvent,1:nzmax+1,1:n_gs_max,ts0) =  &
@@ -452,6 +449,7 @@
         ! time-step, then extract output variables from concen here
         if(Output_every_TS)then
           call Gen_Output_Vars
+
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES
 !         Insert calls output routines (every timestep) here
@@ -460,6 +458,7 @@
 
             ! SEE WHETHER THE ASH HAS HIT ANY AIRPORTS
           call FirstAsh
+
             ! Track ash on vertical profiles
           if (nvprofiles.gt.0)then
             call Calc_vprofile(itime)
@@ -518,21 +517,21 @@
           endif
         else
             ! If we are not monitoring deposits through logsteps, then set
-            ! tot-vol to 0 and rely on the simulation ending through input
+            ! tot_vol to 0 and rely on the simulation ending through input
             ! duration values
           tot_vol = 0.0_ip
         endif
 
         if(tot_vol.gt.EPS_SMALL)then
-          dep_percent_accumulated = dep_vol/tot_vol
+          aloft_percent_remaining = aloft_vol/tot_vol
         else
-          dep_percent_accumulated = 0.0_ip
+          aloft_percent_remaining = 1.0_ip
         endif
 
         ! Check stop conditions
         !  If any of these is true, then the time loop will stop
-           ! Normal stop condition set by user tracking the deposit
-        StopConditions(1) = (dep_percent_accumulated.gt.StopValue)
+           ! Stops if there is less than 1% of ash aloft in the domain
+        StopConditions(1) = (aloft_percent_remaining.lt.(1.0_ip-StopValue))
            ! Normal stop condition if simulation exceeds alloted time
         StopConditions(2) = (time.ge.Simtime_in_hours)
            ! Normal stop conditionn when nothing is left to advect
@@ -548,15 +547,20 @@
                             (outflow_vol.lt.-1.0_ip*EPS_SMALL).or.&
                             (SourceCumulativeVol.lt.-1.0_ip*EPS_SMALL)
 
-        if(StopConditions(1).eqv..true.)then
+        if((CheckConditions(1).eqv..true.).and.&
+           (StopConditions(1).eqv..true.))then
           StopTimeLoop = .true.
-        elseif(StopConditions(2).eqv..true.)then
+        elseif((CheckConditions(2).eqv..true.).and.&
+               (StopConditions(2).eqv..true.))then
           StopTimeLoop = .true.
-        elseif(StopConditions(3).eqv..true.)then
+        elseif((CheckConditions(3).eqv..true.).and.&
+               (StopConditions(3).eqv..true.))then
           StopTimeLoop = .true.
-        elseif(StopConditions(4).eqv..true.)then
+        elseif((CheckConditions(4).eqv..true.).and.&
+               (StopConditions(4).eqv..true.))then
           StopTimeLoop = .true.
-        elseif(StopConditions(5).eqv..true.)then
+        elseif((CheckConditions(5).eqv..true.).and.&
+               (StopConditions(5).eqv..true.))then
           StopTimeLoop = .true.
         else
           StopTimeLoop = .false.
@@ -571,11 +575,13 @@
       ntmax = itime
 
       write(global_info,*)"Time integration completed for the following reason:"
-      if(StopConditions(1).eqv..true.)then
+      if((CheckConditions(1).eqv..true.).and.&
+         (StopConditions(1).eqv..true.))then
         ! Normal stop condition set by user tracking the deposit
-        write(global_info,*)"Percent accumulated exceeds ",StopValue
+        write(global_info,*)"Percent accumulated/exited exceeds ",StopValue
       endif
-      if(StopConditions(2).eqv..true.)then
+      if((CheckConditions(2).eqv..true.).and.&
+         (StopConditions(2).eqv..true.))then
         ! Normal stop condition if simulation exceeds alloted time
         write(global_info,*)"time.le.Simtime_in_hours"
         write(global_info,*)"              Time = ",real(time,kind=4)
@@ -584,12 +590,14 @@
         write(global_log,*)"              Time = ",real(time,kind=4)
         write(global_log,*)"  Simtime_in_hours = ",real(Simtime_in_hours,kind=4)
       endif
-      if(StopConditions(3).eqv..true.)then
-        ! Normal stop conditionn when nothing is left to advect
-        write(global_info,*)"n_gs_aloft = 0"
-        write(global_log,*)"n_gs_aloft = 0"
+      if((CheckConditions(3).eqv..true.).and.&
+         (StopConditions(3).eqv..true.))then
+        ! Normal stop condition when nothing is left to advect
+        write(global_info,*)"No ash species remain aloft."
+        write(global_log,*)"No ash species remain aloft."
       endif
-      if(StopConditions(4).eqv..true.)then
+      if((CheckConditions(4).eqv..true.).and.&
+         (StopConditions(4).eqv..true.))then
         ! Error stop condition if the concen and outflow do not match the source
         write(global_info,*)"Cummulative source volume does not match aloft + outflow"
         write(global_info,*)" tot_vol = ",tot_vol
@@ -599,7 +607,8 @@
         write(global_info,*)" e_Volume = ",e_Volume
         stop 1
       endif
-      if(StopConditions(5).eqv..true.)then
+      if((CheckConditions(5).eqv..true.).and.&
+         (StopConditions(5).eqv..true.))then
         ! Error stop condition if any volume measure is negative
         write(global_info,*)"One of the volume measures is negative."
         write(global_info,*)"        dep_vol = ",dep_vol
