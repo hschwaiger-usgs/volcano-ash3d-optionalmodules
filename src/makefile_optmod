@@ -33,7 +33,9 @@
 #    Current available options are:
 #      gfortran , ifort
 #    This variable cannot be left blank
+#
 SYSTEM = gfortran
+#SYSTEM = ifort
 #
 #  RUN specifies which collection of compilation flags that should be run
 #    Current available options are:
@@ -48,6 +50,12 @@ SYSTEM = gfortran
 #RUN = PROF
 RUN = OPT
 #RUN = OMPOPT
+
+#    This variable cannot be left blank
+OS = LINUX
+#OS = MACOS
+#OS = WINDOWS
+
 # This is the location of the USGS libraries and include files
 # This might be different from the INSTALLDIR path if you want to link to special MetReader
 # projection and HoursSince packages.
@@ -55,7 +63,7 @@ USGSROOT=/opt/USGS
 
 # This is the location of the Ash3d core code source files that we will build this
 # research branch with.
-ASH3dCCSRC=~/work/USGS/Software_repos/GIT_sandboxes/Ash3d/src
+ASH3dCCSRC=~/work/USGS/Software/GIT/Ash3d/src
 
 INSTALLDIR=/opt/USGS/Ash3d
 
@@ -102,11 +110,11 @@ MFILE=makefile_optmod
 #      LIM_NONE
 #      LIM_LAXWEN
 #      LIM_BW
-#      LIN_FROMM
+#      LIM_FROMM
 #      LIM_MINMOD
 #      LIM_SUPERBEE
 #      LIM_MC
-LIMITER = LIM_SUPERBEE
+#LIMITER = LIM_SUPERBEE
 #LIMITER = LIM_NONE
 #
 #  DIFFMETH specifies whether or not to use Crank-Nicolson
@@ -115,7 +123,7 @@ LIMITER = LIM_SUPERBEE
 #DIFFMETH=EXPLDIFF
 # Implicit calculation of diffusion using Crank-Nicolson
 #DIFFMETH=EXPLDIFF
-DIFFMETH=CRANKNIC
+#DIFFMETH=CRANKNIC
 #
 #  TESTCASE specified whether or not to compile for a test case and which one
 #    Current available options are:
@@ -144,6 +152,14 @@ OPTMODS_FPP= -x f95-cpp-input -DTESTCASES
 OPTMODS_OBJ=           \
 Testcases.o
 
+# Ash3d can log some useful information about a run such as the username of
+# account that ran the case, then hostname of the system and run directory
+# (or current working directory).  Although this is useful for record-keeping,
+# this can be considered sensitive information.  To disable this logging,
+# set PII=OFF
+PII=ON
+#PII=OFF
+
 ###############################################################################
 #####  END OF USER SPECIFIED FLAGS  ###########################################
 ###############################################################################
@@ -152,6 +168,18 @@ Testcases.o
 
 ###############################################################################
 ###############################################################################
+
+OSFPPFLAG = -DLINUX
+ifeq ($(OS), LINUX)
+    OSFPPFLAG = -DLINUX
+endif
+ifeq ($(OS), MACOS)
+    OSFPPFLAG = -DMACOS
+endif
+ifeq ($(OS), WINDOWS)
+    OSFPPFLAG = -DWINDOWS
+endif
+
 
 LIMFPPFLAG = -DLIM_SUPERBEE
 ifeq ($(LIMITER), LIM_NONE)
@@ -199,9 +227,11 @@ ifeq ($(VERB), 3)
     VERBFPPFLAG = -DVERBOSE_L3
 endif
 
-DATAFPPFLAGS =
+DATAFPPFLAG =
 ifeq ($(USENETCDF), T)
  ncFPPFLAG = -DUSENETCDF
+  # if you only have netcdf3, then add this flag to block out references to nc4 subroutines
+ #ncFPPFLAG = -DUSENETCDF -DNC3
  ncLIBS = -lnetcdf -lnetcdff
 endif
 ifeq ($(USEGRIB), T)
@@ -212,7 +242,7 @@ ifeq ($(USEGRIB), T)
  grbLIBS = -leccodes -leccodes_f90
 endif
 
-DATAFPPFLAGS = $(ncFPPFLAG) $(grbFPPFLAG)
+DATAFPPFLAG = $(ncFPPFLAG) $(grbFPPFLAG)
 DATALIBS = $(ncLIBS) $(grbLIBS)
 
 ifeq ($(USEPOINTERS), T)
@@ -299,7 +329,7 @@ ifeq ($(SYSTEM), gfortran)
     LIBS = $(COMPLIBS) $(USGSLIBDIR) $(USGSINC) $(COMPINC) -llapack -lblas $(USGSLIB) $(DATALIBS)
 # Debugging flags
 ifeq ($(RUN), DEBUG)
-    FFLAGS =  -O0 -g3 -Wall -fbounds-check -pedantic -fbacktrace -fimplicit-none -Wunderflow -Wuninitialized -ffpe-trap=invalid,zero,overflow -fdefault-real-8
+    FFLAGS = -O0 -g3 -Wall -Wextra -fimplicit-none  -Wall  -Wline-truncation  -Wcharacter-truncation  -Wsurprising  -Waliasing  -Wimplicit-interface  -Wunused-parameter  -fwhole-file  -fcheck=all  -std=f2008  -pedantic  -fbacktrace -Wunderflow -ffpe-trap=invalid,zero,overflow
     ASH3DEXEC=Ash3d_TC_debug
 endif
 ifeq ($(RUN), DEBUGOMP)
@@ -368,6 +398,7 @@ endif
 
 OBJECTS = \
 Ash3d_VariableModules.o  \
+Ash3d_OS_info.o          \
 Input_Data.o             \
 Help.o                   \
 VotW.o                   \
@@ -407,6 +438,8 @@ Ash3d_TC: $(OBJECTS) $(DATAOBJ) $(OPTMODS_OBJ) Ash3d_TC.F90 $(MFILE)
 # Objects/Modules for initilization and model set-up
 Ash3d_VariableModules.o: $(ASH3dCCSRC)/Ash3d_VariableModules.f90 $(MFILE)
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Ash3d_VariableModules.f90
+Ash3d_OS_info.o: $(ASH3dCCSRC)/Ash3d_OS_info.F90 $(MFILE) $(ASH3dCCSRC)/Ash3d_VariableModules.f90
+	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Ash3d_OS_info.F90
 Input_Data.o: $(ASH3dCCSRC)/Input_Data.f90 $(MFILE) Ash3d_VariableModules.o Tephra.o Help.o VotW.o Diffusion.o Airports.o $(DATAOBJ)
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Input_Data.f90
 ResetParams.o: $(ASH3dCCSRC)/ResetParams.f90 $(MFILE) Ash3d_VariableModules.o Tephra.o Output_Vars.o

@@ -6,7 +6,7 @@
 
       use global_param,  only : &
          useCalcFallVel,useDiffusion,useHorzAdvect,useVertAdvect,VERB,&
-         HR_2_S,useTemperature,DT_MIN,CFL,KM3_2_M3,EPS_TINY,EPS_SMALL,&
+         HR_2_S,useTemperature,DT_MIN,KM3_2_M3,EPS_TINY,EPS_SMALL,&
          nmods,OPTMOD_names,StopConditions,CheckConditions
 
       use mesh,          only : &
@@ -20,15 +20,16 @@
          DepositAreaCovered,DepositThickness,LoadVal,CloudLoadArea,&
          Calculated_Cloud_Load,Calculated_AshThickness,Calc_vprofile, &
            Allocate_Output_UserVars, &
+           Allocate_NTime,   &
            Allocate_Profile, &
            Gen_Output_Vars,&
            FirstAsh
 
       use io_data,       only : &
-         Called_Gen_Output_Vars,isFinal_TS,LoadConcen,log_step, Ash3dHome,&
+         Called_Gen_Output_Vars,isFinal_TS,LoadConcen,log_step,&
          Output_at_logsteps,Output_at_WriteTimes,Output_every_TS,&
          NextWriteTime,iTimeNext,nvprofiles,nWriteTimes,&
-         WriteAirportFile_ASCII,WriteAirportFile_KML
+         Write_PT_Data,Write_PR_Data
 
       use time_data,     only : &
          time,dt,Simtime_in_hours,t0,t1,ntmax
@@ -45,6 +46,7 @@
            Allocate_Tephra,&
            Allocate_Tephra_Met,&
            Prune_GS
+   
       use Atmosphere,    only : &
            Allocate_Atmosphere_Met
 
@@ -73,7 +75,7 @@
 
       implicit none
 
-      integer               :: iostatus
+!      integer               :: iostatus
       integer               :: itime
       integer               :: j,k
       integer               :: ii,jj,iz,isize
@@ -82,64 +84,54 @@
       logical               :: Load_MesoSteps
       logical               :: StopTimeLoop   = .false.
       logical               :: first_time     = .true.
-      character(len=130)    :: tmp_str
+!      character(len=130)    :: tmp_str
       real(kind=ip)         :: MassConsErr
 
       INTERFACE
+#ifdef USENETCDF
+        !subroutine NC_RestartFile_LoadConcen
+        !end subroutine NC_RestartFile_LoadConcen
+#endif
+        subroutine Set_OS_Env
+        end subroutine Set_OS_Env
         subroutine Read_Control_File
-        end subroutine
+        end subroutine Read_Control_File
+        subroutine input_data_ResetParams
+        end subroutine input_data_ResetParams
         subroutine alloc_arrays
-        end subroutine
+        end subroutine alloc_arrays
         subroutine calc_mesh_params
-        end subroutine
+        end subroutine calc_mesh_params
         subroutine MesoInterpolater(TimeNow,Load_MesoSteps,Interval_Frac,first_time)
           integer,parameter  :: dp         = 8 ! Double precision
           real(kind=dp),intent(in)  :: TimeNow
           real(kind=dp),intent(out) :: Interval_Frac
           logical      ,intent(out) :: Load_MesoSteps
           logical      ,intent(in)  :: first_time
-        end subroutine
+        end subroutine MesoInterpolater
          ! We do need to call Adjust_DT from this top-level file
         subroutine Adjust_DT(mesostep)
           logical, intent(in), optional :: mesostep
         end subroutine
         subroutine output_results
-        end subroutine
+        end subroutine output_results
         subroutine Set_BC(bc_code)
           integer,intent(in) :: bc_code ! 1 for advection, 2 for diffusion
-        end subroutine
+        end subroutine Set_BC
         subroutine vprofilewriter(itime)
           integer, intent(in) :: itime
-        end subroutine
+        end subroutine vprofilewriter
         subroutine TimeStepTotals(itime)
           integer, intent(in) :: itime
-        end subroutine
+        end subroutine TimeStepTotals
         subroutine dealloc_arrays
-        end subroutine
+        end subroutine dealloc_arrays
       END INTERFACE
 
-      ! Set the default installation path
-      ! This is only needed if shared data files with fixed paths are read
-      ! in such as the global airport and volcano ESP files.
-      Ash3dHome = '/opt/USGS/Ash3d'
-      ! Here it is over-written by compile-time path, if available
-#include "installpath.h"
-      ! This can be over-written if an environment variable is set
-      call GET_ENVIRONMENT_VARIABLE(NAME="ASH3DHOME",VALUE=tmp_str,STATUS=iostatus)
-      if(iostatus.eq.0)then
-        Ash3dHome = tmp_str
-        write(global_info,*)&
-          "Install path reset by environment variable to: ",Ash3dHome
-      endif
-      call GET_ENVIRONMENT_VARIABLE(NAME="ASH3DCFL",VALUE=tmp_str,STATUS=iostatus)
-      if(iostatus.eq.0)then
-        read(tmp_str,*)CFL
-        write(global_info,*)&
-          "CFL condition reset by environment variable to: ",CFL
-      else
-        write(global_info,*)&
-          "CFL condition : ",CFL
-      endif
+      ! Before we do anything, start a log file
+      open(unit=global_log,file='Ash3d.lst',status='unknown')
+
+      call Set_OS_Env
 
       aloft_percent_remaining = 1.0_ip
       SourceCumulativeVol     = 0.0_ip
@@ -190,7 +182,7 @@
         ! Currently, Ash3d assumes the concentration file is compatible with
         ! the computational grid and grainsize distribution
 #ifdef USENETCDF
-        call NC_RestartFile_LoadConcen
+        !call NC_RestartFile_LoadConcen
 #else
         write(global_info,*)"ERROR: Loading concentration files requires previous netcdf"
         write(global_info,*)"       output.  This Ash3d executable was not compiled with"
@@ -259,7 +251,8 @@
       call output_results
 
       ntmax = max(1,3*int(Simtime_in_hours/dt))
-      if (nvprofiles.gt.0)then
+      call Allocate_NTime(ntmax)
+      if (Write_PR_Data)then
         call Allocate_Profile(nzmax,ntmax,nvprofiles)
       endif
 
@@ -355,6 +348,16 @@
                        concen_pd(ivent,jvent,1:ibase-1,1:n_gs_max,ts0) + & ! kg/km3
                        dt                                              * & ! hr
                        SourceNodeFlux(1:ibase-1,1:n_gs_max)                ! kg/km3 hr
+              do isize=1,n_gs_max
+                do k=1,ibase-1
+                  SourceCumulativeVol = SourceCumulativeVol + & ! final units is km3
+                    dt                              * & ! hr
+                    SourceNodeFlux(k,isize)         * & ! kg/km3 hr
+                    kappa_pd(ivent,jvent,k)         / & ! km3
+                    MagmaDensity                    / & ! kg/m3
+                    KM3_2_M3                            ! m3/km3
+                enddo
+              enddo
               do iz=ibase,itop
                 !Within the cloud: first, average the concentration that curently
                 !exists in the 9 cells surrounding the vent
@@ -364,15 +367,37 @@
                 enddo
               enddo
               !Then, add tephra to the 9 nodes surrounding the vent
+              ! TephraSourceNodes has a special line to reduce SourceNodeFlux by a factor 9
+              ! because it is applied 9 times here.  We need to be careful about mixing mass
+              ! and concentration since cell volume differ in lat, but this should be minor
               do ii=ivent-1,ivent+1
                 do jj=jvent-1,jvent+1
                   do iz=ibase,itop
                     concen_pd(ii,jj,iz,1:n_gs_max,ts0) =                &
                               concen_pd(ii,jj,iz,1:n_gs_max,ts0)        &
                                  + dt*SourceNodeFlux(iz,1:n_gs_max)
+                    do isize=1,n_gs_max
+                      SourceCumulativeVol = SourceCumulativeVol + & ! final units is km3
+                        dt                              * & ! hr
+                        SourceNodeFlux(iz,isize)         * & ! kg/km3 hr
+                        kappa_pd(ivent,jvent,iz)         / & ! km3
+                        MagmaDensity                    / & ! kg/m3
+                        KM3_2_M3                            ! m3/km3
+                    enddo
                   enddo
                 enddo
               enddo
+              !! this part is just for book-keeping and error checking
+              !do isize=1,n_gs_max
+              !  do k=1,nzmax+1
+              !    SourceCumulativeVol = SourceCumulativeVol + & ! final units is km3
+              !      dt                              * & ! hr
+              !      SourceNodeFlux(k,isize)         * & ! kg/km3 hr
+              !      kappa_pd(ivent,jvent,k)         / & ! km3
+              !      MagmaDensity                    / & ! kg/m3
+              !      KM3_2_M3                            ! m3/km3
+              !  enddo
+              !enddo
             else ! (SourceType.eq.'umbrella' or 'umbrella_air')
               ! All other standard source types (point,line,profile, suzuki) are
               ! integrated as follows.
@@ -380,11 +405,11 @@
               concen_pd(ivent,jvent,1:nzmax+1,1:n_gs_max,ts0)    &
                 + dt*SourceNodeFlux(1:nzmax+1,1:n_gs_max)
               ! this part is just for book-keeping and error checking
-              do ii=1,n_gs_max
+              do isize=1,n_gs_max
                 do k=1,nzmax+1
                   SourceCumulativeVol = SourceCumulativeVol + & ! final units is km3
                     dt                              * & ! hr
-                    SourceNodeFlux(k,ii)            * & ! kg/km3 hr
+                    SourceNodeFlux(k,isize)         * & ! kg/km3 hr
                     kappa_pd(ivent,jvent,k)         / & ! km3
                     MagmaDensity                    / & ! kg/m3
                     KM3_2_M3                            ! m3/km3
@@ -460,7 +485,7 @@
           call FirstAsh
 
             ! Track ash on vertical profiles
-          if (nvprofiles.gt.0)then
+          if (Write_PR_Data)then
             call Calc_vprofile(itime)
             call vprofilewriter(itime)     !write out vertical profiles
           endif
@@ -485,7 +510,9 @@
 #ifdef TESTCASES
           call Testcase_CalcErrors
 #endif
-          if ((WriteAirportFile_ASCII.or.WriteAirportFile_KML).and. &
+          !if ((WriteAirportFile_ASCII.or.WriteAirportFile_KML).and. &
+          !    (iTimeNext.lt.nWriteTimes)) then
+          if (Write_PT_Data.and. &
               (iTimeNext.lt.nWriteTimes)) then
             do j=iTimeNext,nWriteTimes
               Airport_Thickness_TS(1:nairports,j) = Airport_Thickness(1:nairports)
@@ -534,13 +561,14 @@
         StopConditions(1) = (aloft_percent_remaining.lt.(1.0_ip-StopValue))
            ! Normal stop condition if simulation exceeds alloted time
         StopConditions(2) = (time.ge.Simtime_in_hours)
-           ! Normal stop conditionn when nothing is left to advect
+           ! Normal stop condition when nothing is left to advect
         StopConditions(3) = (n_gs_aloft.eq.0)
         if(SourceCumulativeVol.gt.EPS_TINY)then
           MassConsErr = abs(SourceCumulativeVol-tot_vol)/SourceCumulativeVol
         endif
            ! Error stop condition if the concen and outflow do not match the source
         StopConditions(4) = (MassConsErr.gt.1.0e-3_ip)
+        StopConditions(4) = .false.
            ! Error stop condition if any volume measure is negative
         StopConditions(5) = (dep_vol.lt.-1.0_ip*EPS_SMALL).or.&
                             (aloft_vol.lt.-1.0_ip*EPS_SMALL).or.&
@@ -583,10 +611,10 @@
       if((CheckConditions(2).eqv..true.).and.&
          (StopConditions(2).eqv..true.))then
         ! Normal stop condition if simulation exceeds alloted time
-        write(global_info,*)"time.le.Simtime_in_hours"
+        write(global_info,*)"time.ge.Simtime_in_hours"
         write(global_info,*)"              Time = ",real(time,kind=4)
         write(global_info,*)"  Simtime_in_hours = ",real(Simtime_in_hours,kind=4)
-        write(global_log,*)"time.le.Simtime_in_hours"
+        write(global_log,*)"time.ge.Simtime_in_hours"
         write(global_log,*)"              Time = ",real(time,kind=4)
         write(global_log,*)"  Simtime_in_hours = ",real(Simtime_in_hours,kind=4)
       endif
@@ -623,6 +651,10 @@
       ! ************************************************************************
 
       isFinal_TS = .true.
+      Called_Gen_Output_Vars  = .false.
+      Calculated_Cloud_Load   = .false.
+      Calculated_AshThickness = .false.
+
       write(global_info,12)   !put footnotes below output table
       write(global_log,12)   !put footnotes below output table
       write(global_log ,12)

@@ -1,4 +1,4 @@
-#!/usr/local/bin/octave -qf
+#!/usr/bin/octave -qf
 clear all;
 
 IsOct    = 0;

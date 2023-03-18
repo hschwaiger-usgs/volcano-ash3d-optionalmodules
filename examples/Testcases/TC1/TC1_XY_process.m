@@ -1,4 +1,4 @@
-#!/usr/local/bin/octave -qf
+#!/usr/bin/octave -qf
 clear all;
 
 % Load parameters from run script
