@@ -5,9 +5,9 @@
       use io_units
 
       use global_param,  only : &
-         useCalcFallVel,useDiffusion,useHorzAdvect,useVertAdvect,VERB,&
+         useCalcFallVel,useDiffusion,useHorzAdvect,useVertAdvect,&
          HR_2_S,useTemperature,DT_MIN,KM3_2_M3,EPS_TINY,EPS_SMALL,&
-         nmods,OPTMOD_names,StopConditions,CheckConditions
+         nmods,OPTMOD_names,StopConditions,CheckConditions      
 
       use mesh,          only : &
          ivent,jvent,nxmax,nymax,nzmax,nsmax,ts0,ts1,kappa_pd
@@ -104,10 +104,10 @@
         end subroutine calc_mesh_params
         subroutine MesoInterpolater(TimeNow,Load_MesoSteps,Interval_Frac,first_time)
           integer,parameter  :: dp         = 8 ! Double precision
-          real(kind=dp),intent(in)  :: TimeNow
-          real(kind=dp),intent(out) :: Interval_Frac
-          logical      ,intent(out) :: Load_MesoSteps
-          logical      ,intent(in)  :: first_time
+          real(kind=dp),intent(in)    :: TimeNow
+          real(kind=dp),intent(out)   :: Interval_Frac
+          logical      ,intent(inout) :: Load_MesoSteps
+          logical      ,intent(in)    :: first_time
         end subroutine MesoInterpolater
          ! We do need to call Adjust_DT from this top-level file
         subroutine Adjust_DT(mesostep)
@@ -128,8 +128,8 @@
         end subroutine dealloc_arrays
       END INTERFACE
 
-      ! Before we do anything, start a log file
-      open(unit=global_log,file='Ash3d.lst',status='unknown')
+!      ! Before we do anything, start a log file
+!      open(unit=global_log,file='Ash3d.lst',status='unknown')
 
       call Set_OS_Env
 
@@ -157,7 +157,9 @@
 !  e.g. SRC_RESUSP will require the VARDIFF and LC be set
 !
       DO j=1,nmods
-        write(global_info,*)"Testing for ",OPTMOD_names(j),j
+        do io=1,2;if(VB(io).le.verbosity_essential)then
+          write(outlog(io),*)"Testing for ",OPTMOD_names(j),j
+        endif;enddo
 !#ifdef TESTCASES
 !#endif
       ENDDO
@@ -184,10 +186,12 @@
 #ifdef USENETCDF
         !call NC_RestartFile_LoadConcen
 #else
-        write(global_info,*)"ERROR: Loading concentration files requires previous netcdf"
-        write(global_info,*)"       output.  This Ash3d executable was not compiled with"
-        write(global_info,*)"       netcdf support.  Please recompile Ash3d with"
-        write(global_info,*)"       USENETCDF=T, or select another source."
+        do io=1,2;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: Loading concentration files requires previous netcdf"
+          write(errlog(io),*)"       output.  This Ash3d executable was not compiled with"
+          write(errlog(io),*)"       netcdf support.  Please recompile Ash3d with"
+          write(errlog(io),*)"       USENETCDF=T, or select another source."
+        endif;enddo
         stop 1
 #endif
       else
@@ -257,8 +261,9 @@
       endif
 
       ! write "Building time array of plume height & eruption rate"
-      write(global_info,7)
-      write(global_log ,7)
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),7)
+      endif;enddo
 
       call Allocate_Source_time
 
@@ -269,14 +274,17 @@
 #endif
 
       ! Write out starting volume, max time steps, and headers for the table that follows
-      write(global_info,1) tot_vol,ntmax
-      write(global_log ,1) tot_vol,ntmax
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),1) tot_vol,ntmax
+      endif;enddo
 
       ! ************************************************************************
       ! ****** begin time simulation *******************************************
       ! ************************************************************************
       itime = 0
-      write(global_info,*)"Starting time loop."
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Starting time loop."
+      endif;enddo
 
       do while (StopTimeLoop.eqv..false.)
         ! Note: stop conditions are evaluated at the end of the time loop
@@ -292,11 +300,13 @@
 
         itime = itime + 1
         if(itime.gt.ntmax)then
-          write(global_info,*)"WARNING: The number of time steps attempted exceeds 3x that anticipated."
-          write(global_info,*)"         Check that the winds are stable"
-          write(global_info,*)"        Simtime_in_hours = ",Simtime_in_hours
-          write(global_info,*)"                   ntmax = ",ntmax
-          write(global_info,*)"            current step = ",itime
+          do io=1,2;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"WARNING: The number of time steps attempted exceeds 3x that anticipated."
+            write(outlog(io),*)"         Check that the winds are stable"
+            write(outlog(io),*)"        Simtime_in_hours = ",Simtime_in_hours
+            write(outlog(io),*)"                   ntmax = ",ntmax
+            write(outlog(io),*)"            current step = ",itime
+          endif;enddo
         endif
 
           ! find the wind field at the current time
@@ -315,7 +325,7 @@
         call Adjust_DT(.false.)
 #endif
 !------------------------------------------------------------------------------
-        if(VERB.gt.1)write(global_info,*)"Ash3d: Calling MassFluxCalculator"
+
 #ifndef TESTCASES
         call MassFluxCalculator         ! call subroutine that determines mass flux & plume height
 #endif
@@ -387,17 +397,6 @@
                   enddo
                 enddo
               enddo
-              !! this part is just for book-keeping and error checking
-              !do isize=1,n_gs_max
-              !  do k=1,nzmax+1
-              !    SourceCumulativeVol = SourceCumulativeVol + & ! final units is km3
-              !      dt                              * & ! hr
-              !      SourceNodeFlux(k,isize)         * & ! kg/km3 hr
-              !      kappa_pd(ivent,jvent,k)         / & ! km3
-              !      MagmaDensity                    / & ! kg/m3
-              !      KM3_2_M3                            ! m3/km3
-              !  enddo
-              !enddo
             else ! (SourceType.eq.'umbrella' or 'umbrella_air')
               ! All other standard source types (point,line,profile, suzuki) are
               ! integrated as follows.
@@ -418,7 +417,9 @@
             endif
           else
             ! This is not a standard source.
-            write(global_info,*)"WARNING: source type is non-standard"
+            do io=1,2;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"WARNING: source type is non-standard"
+            endif;enddo
             stop 1
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES
@@ -511,7 +512,6 @@
           call Testcase_CalcErrors
 #endif
           !if ((WriteAirportFile_ASCII.or.WriteAirportFile_KML).and. &
-          !    (iTimeNext.lt.nWriteTimes)) then
           if (Write_PT_Data.and. &
               (iTimeNext.lt.nWriteTimes)) then
             do j=iTimeNext,nWriteTimes
@@ -568,7 +568,7 @@
         endif
            ! Error stop condition if the concen and outflow do not match the source
         StopConditions(4) = (MassConsErr.gt.1.0e-3_ip)
-        StopConditions(4) = .false.
+        StopConditions(4) = .false.  ! We override this condition until the umbr. source conserves mass
            ! Error stop condition if any volume measure is negative
         StopConditions(5) = (dep_vol.lt.-1.0_ip*EPS_SMALL).or.&
                             (aloft_vol.lt.-1.0_ip*EPS_SMALL).or.&
@@ -593,7 +593,6 @@
         else
           StopTimeLoop = .false.
         endif
-
       enddo  !loop over itime
               !  ((dep_percent_accumulated.le.StopValue).and. &
               !    (time.lt.Simtime_in_hours)        .and. &
@@ -602,47 +601,55 @@
       ! Reset ntmax to the actual number of time steps
       ntmax = itime
 
-      write(global_info,*)"Time integration completed for the following reason:"
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Time integration completed for the following reason:"
+      endif;enddo
       if((CheckConditions(1).eqv..true.).and.&
          (StopConditions(1).eqv..true.))then
         ! Normal stop condition set by user tracking the deposit
-        write(global_info,*)"Percent accumulated/exited exceeds ",StopValue
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Percent accumulated/exited exceeds ",StopValue
+        endif;enddo
       endif
       if((CheckConditions(2).eqv..true.).and.&
          (StopConditions(2).eqv..true.))then
         ! Normal stop condition if simulation exceeds alloted time
-        write(global_info,*)"time.ge.Simtime_in_hours"
-        write(global_info,*)"              Time = ",real(time,kind=4)
-        write(global_info,*)"  Simtime_in_hours = ",real(Simtime_in_hours,kind=4)
-        write(global_log,*)"time.ge.Simtime_in_hours"
-        write(global_log,*)"              Time = ",real(time,kind=4)
-        write(global_log,*)"  Simtime_in_hours = ",real(Simtime_in_hours,kind=4)
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"time.ge.Simtime_in_hours"
+          write(outlog(io),*)"              Time = ",real(time,kind=4)
+          write(outlog(io),*)"  Simtime_in_hours = ",real(Simtime_in_hours,kind=4)
+        endif;enddo
       endif
       if((CheckConditions(3).eqv..true.).and.&
          (StopConditions(3).eqv..true.))then
         ! Normal stop condition when nothing is left to advect
-        write(global_info,*)"No ash species remain aloft."
-        write(global_log,*)"No ash species remain aloft."
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"No ash species remain aloft."
+        endif;enddo
       endif
       if((CheckConditions(4).eqv..true.).and.&
          (StopConditions(4).eqv..true.))then
         ! Error stop condition if the concen and outflow do not match the source
-        write(global_info,*)"Cummulative source volume does not match aloft + outflow"
-        write(global_info,*)" tot_vol = ",tot_vol
-        write(global_info,*)" SourceCumulativeVol = ",SourceCumulativeVol
-        write(global_info,*)" Abs. Error = ",&
-                            abs((tot_vol-SourceCumulativeVol)/SourceCumulativeVol)
-        write(global_info,*)" e_Volume = ",e_Volume
+        do io=1,2;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Cummulative source volume does not match aloft + outflow"
+          write(errlog(io),*)" tot_vol = ",tot_vol
+          write(errlog(io),*)" SourceCumulativeVol = ",SourceCumulativeVol
+          write(errlog(io),*)" Abs. Error = ",&
+                               abs((tot_vol-SourceCumulativeVol)/SourceCumulativeVol)
+          write(errlog(io),*)" e_Volume = ",e_Volume
+        endif;enddo
         stop 1
       endif
       if((CheckConditions(5).eqv..true.).and.&
          (StopConditions(5).eqv..true.))then
         ! Error stop condition if any volume measure is negative
-        write(global_info,*)"One of the volume measures is negative."
-        write(global_info,*)"        dep_vol = ",dep_vol
-        write(global_info,*)"        aloft_vol = ",aloft_vol
-        write(global_info,*)"        outflow_vol = ",outflow_vol
-        write(global_info,*)"        SourceCumulativeVol = ",SourceCumulativeVol
+        do io=1,2;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"One of the volume measures is negative."
+          write(errlog(io),*)"        dep_vol = ",dep_vol
+          write(errlog(io),*)"        aloft_vol = ",aloft_vol
+          write(errlog(io),*)"        outflow_vol = ",outflow_vol
+          write(errlog(io),*)"        SourceCumulativeVol = ",SourceCumulativeVol
+        endif;enddo
         stop 1
       endif
 
@@ -655,13 +662,12 @@
       Calculated_Cloud_Load   = .false.
       Calculated_AshThickness = .false.
 
-      write(global_info,12)   !put footnotes below output table
-      write(global_log,12)   !put footnotes below output table
-      write(global_log ,12)
-      write(global_info,*)'time=',real(time,kind=4),',dt=',real(dt,kind=4)
-      write(global_log,*)'time=',real(time,kind=4),',dt=',real(dt,kind=4)
-      write(global_info,*)"Mass Conservation Error = ",MassConsErr
-      write(global_log,*)"Mass Conservation Error = ",MassConsErr
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),12)   !put footnotes below output table
+        write(outlog(io),*)'time=',real(time,kind=4),',dt=',real(dt,kind=4)
+        write(outlog(io),*)"Mass Conservation Error = ",MassConsErr
+      endif;enddo
+
         ! Make sure we have the latest output variables and go to write routines
       call Gen_Output_Vars
 !------------------------------------------------------------------------------
@@ -671,34 +677,24 @@
 !------------------------------------------------------------------------------
 
       call output_results
-
       !WRITE RESULTS TO LOG AND STANDARD OUTPUT
       !TotalTime_sp = etime(elapsed_sp)
-      !write(global_info,*) elapsed_sp(2), time*3600.0_ip
-      call cpu_time(t1) !time is a scalar real 
-      write(global_info,3) t1-t0, time*HR_2_S
-      write(global_log ,3) t1-t0, time*HR_2_S
-      write(global_info,4) time*HR_2_S/(t1-t0)
-      write(global_log ,4) time*HR_2_S/(t1-t0)
+      call cpu_time(t1) !time is a scalar real
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),3) t1-t0, time*HR_2_S
+        write(outlog(io),4) time*HR_2_S/(t1-t0)
+      endif;enddo
       call TimeStepTotals(itime)
-      write(global_info,5) dep_vol
-      write(global_log ,5) dep_vol
-      write(global_info,6) tot_vol
-      write(global_log ,6) tot_vol
-      write(global_info,9) maxval(DepositThickness), DepositAreaCovered
-      write(global_log ,9) maxval(DepositThickness), DepositAreaCovered
-
-      write(global_info,34)       !write out area of cloud at different thresholds
-      write(global_log ,34)
-      do k=1,5
-         write(global_info,35) LoadVal(k), CloudLoadArea(k)
-         write(global_log ,35) LoadVal(k), CloudLoadArea(k)
-      enddo
-        
-      write(global_info,33)    !write "normal completion"
-      write(global_log ,33)
-      
-      close(9)       !close log file 
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),5) dep_vol
+        write(outlog(io),6) tot_vol
+        write(outlog(io),9) maxval(DepositThickness), DepositAreaCovered
+        write(outlog(io),34)       !write out area of cloud at different thresholds
+        do k=1,5
+          write(outlog(io),35) LoadVal(k), CloudLoadArea(k)
+        enddo
+        write(outlog(io),33)    !write "normal completion"
+      endif;enddo
 
       ! Format statements
 1     format(/,5x,'Starting volume (km3 DRE)    = ',f11.4,       &
@@ -727,10 +723,13 @@
 
       ! clean up memory
       call dealloc_arrays
+
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES
 !         Insert calls deallocation routines here
 !
 !------------------------------------------------------------------------------
+
+      close(global_log)       !close log file 
 
       end program Ash3d
