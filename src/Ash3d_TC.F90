@@ -64,6 +64,11 @@
          Airport_thickness_TS,Airport_thickness,nairports,&
            ReadAirports
 
+#ifdef USENETCDF
+      use Ash3d_Netcdf,  only : &
+           NC_RestartFile_LoadConcen
+#endif
+
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES
 !         Insert 'use' statements here
@@ -88,10 +93,6 @@
       real(kind=ip)         :: MassConsErr
 
       INTERFACE
-#ifdef USENETCDF
-        !subroutine NC_RestartFile_LoadConcen
-        !end subroutine NC_RestartFile_LoadConcen
-#endif
         subroutine Set_OS_Env
         end subroutine Set_OS_Env
         subroutine Read_Control_File
@@ -156,13 +157,13 @@
 !  compiled in this executable and for consistency among modules:
 !  e.g. SRC_RESUSP will require the VARDIFF and LC be set
 !
-      DO j=1,nmods
+      do j=1,nmods
         do io=1,2;if(VB(io).le.verbosity_essential)then
           write(outlog(io),*)"Testing for ",OPTMOD_names(j),j
         endif;enddo
 !#ifdef TESTCASES
 !#endif
-      ENDDO
+      enddo
 !
 !------------------------------------------------------------------------------
 
@@ -184,7 +185,7 @@
         ! Currently, Ash3d assumes the concentration file is compatible with
         ! the computational grid and grainsize distribution
 #ifdef USENETCDF
-        !call NC_RestartFile_LoadConcen
+        call NC_RestartFile_LoadConcen
 #else
         do io=1,2;if(VB(io).le.verbosity_error)then
           write(errlog(io),*)"ERROR: Loading concentration files requires previous netcdf"
@@ -195,8 +196,10 @@
         stop 1
 #endif
       else
-       concen_pd = 0.0_ip
-       DepositGranularity = 0.0_ip
+        ! Initialize arrays if we haven't already loaded the concentration from
+        ! a previous run
+        concen_pd = 0.0_ip
+        DepositGranularity = 0.0_ip
       endif
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES

@@ -7,6 +7,17 @@
       use Atmosphere,    only : &
          R_GAS_DRYAIR
 
+      implicit none
+
+        ! Set everything to private by default
+      private
+
+        ! Publicly available subroutines/functions
+      public set_TestCase_globvars,set_TestCase_windfield,DistSource,&
+             Testcase_CalcErrors
+
+        ! Publicly available variables
+
       integer :: TestCase
       logical :: fullASCIIOutput
       integer :: SubCase
@@ -20,27 +31,27 @@
       !real(kind=ip) :: MMS_suthcons  = 117.0_ip     ! Sutherland Constant (K)
       !real(kind=ip) :: MMS_suthtref  = 273.0_ip     ! Sutherland Ref
       !temperature (K)
-      real(kind=ip) :: MMS_eta0      = 1.8325e-5_ip   ! Ref visc (Pa s)
-      real(kind=ip) :: MMS_suthcons  = 120.0_ip     ! Sutherland Constant (K)
-      real(kind=ip) :: MMS_suthtref  = 296.16_ip     ! Sutherland Ref temperature (K)
+      !real(kind=ip) :: MMS_eta0      = 1.8325e-5_ip   ! Ref visc (Pa s)
+      !real(kind=ip) :: MMS_suthcons  = 120.0_ip     ! Sutherland Constant (K)
+      !real(kind=ip) :: MMS_suthtref  = 296.16_ip     ! Sutherland Ref temperature (K)
 
       real(kind=ip) :: MMS_ztrop     = 10000.0_ip   ! Height of troposphere (m)
-      real(kind=ip) :: MMS_Ffac1     = 1.39896599613964_ip  ! WilsonHuang fac1
-      real(kind=ip) :: MMS_Ffac2     = 0.635137780328017_ip ! WilsonHuang fac2
-      real(kind=ip) :: MMS_Rs        = R_GAS_DRYAIR
-      real(kind=ip) :: MMS_temper0   = 300.0_ip     ! Surf temp (K)
-      real(kind=ip) :: MMS_pres0     = 100000.0_ip     ! Surf pres (Pa)
-      real(kind=ip) :: MMS_skinz     = 7000.0_ip    ! pres skin depth (m)
-      real(kind=ip) :: MMS_lpsr      = -0.007_ip    ! lapse rate (K/m)
-      real(kind=ip) :: MMS_diam      = 0.0001_ip    ! grain size (m)
-      real(kind=ip) :: MMS_rhom      = 2000.0_ip    ! density (kg/m3)
+      !real(kind=ip) :: MMS_Ffac1     = 1.39896599613964_ip  ! WilsonHuang fac1
+      !real(kind=ip) :: MMS_Ffac2     = 0.635137780328017_ip ! WilsonHuang fac2
+      !real(kind=ip) :: MMS_Rs        = R_GAS_DRYAIR
+      !real(kind=ip) :: MMS_temper0   = 300.0_ip     ! Surf temp (K)
+      !real(kind=ip) :: MMS_pres0     = 100000.0_ip     ! Surf pres (Pa)
+      !real(kind=ip) :: MMS_skinz     = 7000.0_ip    ! pres skin depth (m)
+      !real(kind=ip) :: MMS_lpsr      = -0.007_ip    ! lapse rate (K/m)
+      !real(kind=ip) :: MMS_diam      = 0.0001_ip    ! grain size (m)
+      !real(kind=ip) :: MMS_rhom      = 2000.0_ip    ! density (kg/m3)
       real(kind=ip) :: MMS_U0        = -10.0_ip      ! ref x vel (m/s)
       real(kind=ip) :: MMS_V0        = -10.0_ip      ! ref y vel (m/s)
       real(kind=ip) :: MMS_W0        = 1.0_ip       ! ref z vel (m/s)
       real(kind=ip) :: MMS_Q0        = 1.0e10_ip    ! ref concen (kg/m3)
       real(kind=ip) :: MMS_zeta0     = 200000.0_ip    ! ref zeta (m)
       real(kind=ip) :: MMS_qxylen    = 200000.0_ip     ! horiz length of solution (m)
-      real(kind=ip) :: MMS_vzlen     = 100000.0_ip     ! horiz length of vz (m)
+      !real(kind=ip) :: MMS_vzlen     = 100000.0_ip     ! horiz length of vz (m)
 
       logical :: MMS_USE_X    = .true.
       logical :: MMS_USE_Y    = .true.
@@ -63,7 +74,9 @@
       subroutine set_TestCase_globvars
 
       use global_param,  only : &
-         useVertAdvect,useHorzAdvect,DT_MIN,DT_MAX,KM2_2_M2,HR_2_S
+         useVertAdvect,useHorzAdvect,&
+         !DT_MIN,DT_MAX,&
+         KM2_2_M2,HR_2_S
 
       use mesh,          only : &
         ZPADDING
@@ -735,8 +748,8 @@
          PI
 
       use mesh,          only : &
-         nxmax,nymax,nzmax,nsmax,lat_cc_pd,lon_cc_pd,kappa_pd,z_cc_pd,dz_vec_pd,&
-         x_cc_pd,y_cc_pd,ts0,IsLatLon,dx,dy
+         nxmax,nymax,nzmax,nsmax,lat_cc_pd,lon_cc_pd,kappa_pd,z_cc_pd,&
+         x_cc_pd,y_cc_pd,ts0,IsLatLon !,dx,dy
 
       use solution,      only : &
          concen_pd
@@ -1139,8 +1152,8 @@
 
       real(kind=ip) :: MassConsError
       real(kind=ip) :: TotalVol
-      real(kind=ip) :: coeff,coeff2,eta1,eta2
-      real(kind=ip) :: kappa1,kappa2,xm,ym,zm,Tc
+      real(kind=ip) :: eta1,eta2
+      real(kind=ip) :: xm,ym,zm,Tc
 
       !real(kind=ip) :: MMS_TrueSol
 
