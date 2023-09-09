@@ -203,12 +203,14 @@
       !endif
 !#endif
 
-      write(global_info,*)"       TestCase = ",TestCase
-      write(global_info,*)"        SubCase = ",SubCase
-      write(global_info,*)"  useVertAdvect = ",useVertAdvect
-      write(global_info,*)"  useHorzAdvect = ",useHorzAdvect
-      write(global_info,*)"fullASCIIOutput = ",fullASCIIOutput
-      write(global_info,*)"       ZPADDING = ",ZPADDING
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"       TestCase = ",TestCase
+        write(outlog(io),*)"        SubCase = ",SubCase
+        write(outlog(io),*)"  useVertAdvect = ",useVertAdvect
+        write(outlog(io),*)"  useHorzAdvect = ",useHorzAdvect
+        write(outlog(io),*)"fullASCIIOutput = ",fullASCIIOutput
+        write(outlog(io),*)"       ZPADDING = ",ZPADDING
+      endif;enddo
 
       end subroutine set_TestCase_globvars
 
@@ -259,7 +261,6 @@
                                  ve_out,vn_out)
                   vx_pd(i,j,k) = ve_out
                   vy_pd(i,j,k) = vn_out
-                  !write(global_info,*)gridlon(i),lat_cc_pd(j),ve_out,vn_out
                 enddo
               enddo
             enddo
@@ -281,7 +282,6 @@
                                  ve_out,vn_out)
                   vx_pd(i,j,k) = ve_out
                   vy_pd(i,j,k) = vn_out
-                  !write(global_info,*)gridlon(i),lat_cc_pd(j),ve_out,vn_out
                 enddo
               enddo
             enddo
@@ -303,7 +303,6 @@
                                  ve_out,vn_out)
                   vx_pd(i,j,k) = ve_out
                   vy_pd(i,j,k) = vn_out
-                  !write(global_info,*)gridlon(i),lat_cc_pd(j),ve_out,vn_out
                 enddo
               enddo
             enddo
@@ -369,7 +368,6 @@
                                  ve_out,vn_out)
                   vx_pd(i,j,k) = ve_out
                   vy_pd(i,j,k) = vn_out
-                  !write(global_info,*)gridlon(i),gridlat(j),ve_out,vn_out
                 enddo
               enddo
             enddo
@@ -391,7 +389,6 @@
                                  ve_out,vn_out)
                   vx_pd(i,j,k) = ve_out
                   vy_pd(i,j,k) = vn_out
-                  !write(global_info,*)gridlon(i),gridlat(j),ve_out,vn_out
                 enddo
               enddo
             enddo
@@ -413,7 +410,6 @@
                                  ve_out,vn_out)
                   vx_pd(i,j,k) = ve_out
                   vy_pd(i,j,k) = vn_out
-                  !write(global_info,*)gridlon(i),gridlat(j),ve_out,vn_out
                 enddo
               enddo
             enddo
@@ -422,14 +418,18 @@
             vy_pd(:,:,:) = -1.0_ip
           endif
         else
-          write(global_info,*)"Invalid SubCase"
+          do io=1,2;if(VB(io).le.verbosity_error)then
+            write(outlog(io),*)"Invalid SubCase"
+          endif;enddo
           stop 1
         endif
       endif
 
       if(TestCase.eq.2)then
         if(ZPADDING.gt.1.0_ip)then
-          write(global_info,*)"ERROR: ZPADDING != 1.0"
+          do io=1,2;if(VB(io).le.verbosity_error)then
+            write(outlog(io),*)"ERROR: ZPADDING != 1.0"
+          endif;enddo
           stop 1
         endif
         ! Test case 2 has a wind field SubCase
@@ -550,7 +550,9 @@
       if(TestCase.eq.6)then
         ! MMS
         if(IsLatLon)then
-          write(global_info,*)"MMS solution only in Cartesian."
+          do io=1,2;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MMS solution only in Cartesian."
+          endif;enddo
           stop 1
         else
           ! Vx is constant
@@ -618,7 +620,7 @@
       real(kind=ip) :: xcolat,xlm,xph
       real(kind=ip) :: eqvel                          ! equitorial velocity of rotation (km/hr)
 
-      rad_in = PJ_radius_earth + z_pt
+      rad_in = PJ_Re + z_pt
       eqvel = 2.0_ip*PI*rad_in*omega
       phi_in  = lat_pt   * DEG2RAD;
       lam_in  = lon_pt   * DEG2RAD;
@@ -854,7 +856,9 @@
       if(TestCase.eq.2)then
         ! Setting up concentration for 1D pulse to be advected
         ! vertically
-        write(global_info,*)"Setting up concentration for TestCase 2"
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Setting up concentration for TestCase 2"
+        endif;enddo
         zpeak = 1.0_ip
         char_len = 0.1
         do n=1,nsmax
@@ -886,7 +890,9 @@
       if(TestCase.eq.3)then
         ! Setting up concentration for 2D cone/box to be advected
         ! horizontally
-        write(global_info,*)"Setting up concentration for TestCase 3"
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Setting up concentration for TestCase 3"
+        endif;enddo
         if(IsLatLon)then
           ! Lat/lon grid
           do n=1,nsmax
@@ -941,7 +947,9 @@
         ! Setting up halfspace concentration for diffusion testing
                 !  With diffusivity_horz=12000 and dx=dy=dz=0.5, use dt =
                 !  5.0e-4_ip
-        write(global_info,*)"Setting up concentration for TestCase 4"
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Setting up concentration for TestCase 4"
+        endif;enddo
         if(SubCase.eq.1.or.SubCase.eq.4)then
           concen_pd = 0.0_ip
           ky = 0.0_ip
@@ -986,7 +994,9 @@
 
       if(TestCase.eq.5)then
         ! Setting up concentration pulse for circular shear advection
-        write(global_info,*)"Setting up concentration for TestCase 5"
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Setting up concentration for TestCase 5"
+        endif;enddo
         if(IsLatLon)then
           do n=1,nsmax
             do k=-1,nzmax+2
@@ -1027,7 +1037,7 @@
 !      if(TestCase.eq.6)then
 !!        ! Setting up MMS
 !        if(IsLatLon)then
-!          write(global_info,*)"MMS not set up for Lat/Lon grids."
+!          write(outlog(io),*)"MMS not set up for Lat/Lon grids."
 !          stop 1
 !        else
 !        do n=1,nsmax
@@ -1074,7 +1084,9 @@
         enddo ! loop over k
       enddo ! loop over n
 
-      write(global_info,*)"Total mass = ",total_mass
+      do io=1,2;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Total mass = ",total_mass
+      endif;enddo
 
       end subroutine DistSource
 
@@ -1517,12 +1529,16 @@
           L1_toterror = L1_toterror / (nsmax * TotalVol)
           L2_toterror = L2_toterror / nsmax
           L2_toterror = sqrt(L2_toterror) / TotalVol
-          write(global_info,*)"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
-          write(global_info,*)" Original total mass = ",total_mass
-          write(global_info,*)" Calculated mass = ",MassConsError
+          do io=1,2;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+            write(outlog(io),*)" Original total mass = ",total_mass
+            write(outlog(io),*)" Calculated mass = ",MassConsError
+          endif;enddo
           MassConsError = abs((MassConsError-total_mass)/total_mass)
-          write(global_info,*)" Mass ratio = ",MassConsError
-          write(global_info,*)"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+          do io=1,2;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)" Mass ratio = ",MassConsError
+            write(outlog(io),*)"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+          endif;enddo
 
           write(ofile1,'(a14)')'TC3_LL_err.dat'
           open(200,file=ofile1,status='replace')
@@ -1640,7 +1656,9 @@
                 elseif (SubCase.eq.3.or.SubCase.eq.6) then
                   err3D(i,j,k)=tsolz(k)-concen_pd(i,j,k,n,ts1)
                 else
-                  write(global_error,*)"Subcase not known.  Stopping program."
+                  do io=1,2;if(VB(io).le.verbosity_error)then
+                    write(errlog(io),*)"ERROR: Subcase not known.  Stopping program."
+                  endif;enddo
                   stop 1
                 endif
 
@@ -1681,7 +1699,9 @@
         endif
         close(200)
         close(201)
-        write(global_info,*)"Wrote to files TC4_err.dat and TC4_sol.dat"
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Wrote to files TC4_err.dat and TC4_sol.dat"
+        endif;enddo
       endif
 
       if(TestCase.eq.5)then
@@ -1771,7 +1791,9 @@
         enddo
         close(200)
         close(201)
-        write(global_info,*)"Wrote to files TC5_err.dat TC5_sol.dat"
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Wrote to files TC5_err.dat TC5_sol.dat"
+        endif;enddo
         endif
 
       endif
