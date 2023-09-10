@@ -46,9 +46,9 @@ SYSTEM = gfortran
 #      OMPOPT   : includes optimizations flags for fastest runtime and OpenMP directives
 #                 To run, enter: env OMP_NUM_THREADS=4 Ash3d input_file.inp
 #    This variable cannot be left blank
-#RUN = DEBUG
+RUN = DEBUG
 #RUN = PROF
-RUN = OPT
+#RUN = OPT
 #RUN = OMPOPT
 
 #    This variable cannot be left blank
@@ -231,10 +231,6 @@ USGSLIBDIR = -L$(USGSROOT)/lib
 USGSLIB = -lMetReader -lhourssince -lprojection
 USGSINC = -I$(USGSROOT)/include
 
-PIIFPP =
-ifeq ($(PII), ON)
- PIIFPPFLAG = -DUSEPII
-endif
 
 TCFPPFLAG =
 ifeq ($(TESTCASE), 0)
@@ -266,7 +262,6 @@ ifeq ($(TESTCASE), 6)
     CYCFPPFLAG = -DNOCYCLE
 endif
 
-
 #SCFPPFLAG =
 ifeq ($(SUBCASE), 0)
     SCFPPFLAG =
@@ -296,6 +291,10 @@ ifeq ($(SUBCASE), 8)
     SCFPPFLAG =-DSUBCASE_8
 endif
 
+PIIFPP =
+ifeq ($(PII), ON)
+ PIIFPPFLAG = -DUSEPII
+endif
 ###############################################################################
 ##########  GNU Fortran Compiler  #############################################
 ifeq ($(SYSTEM), gfortran)
@@ -307,8 +306,7 @@ ifeq ($(SYSTEM), gfortran)
     # -lefence
 # Debugging flags
 ifeq ($(RUN), DEBUG)
-    FFLAGS = -O0 -g3 -Wall -Wextra -fimplicit-none  -Wall  -Wline-truncation  -Wcharacter-truncation  -Wsurprising  -Waliasing  -Wimplicit-interface  -Wunused-parameter  -fwhole-file  -fcheck=all -pedantic  -fbacktrace -Wunderflow -ffpe-trap=invalid,zero,overflow 
-#-fdefault-real-8 -std=f2008 
+    FFLAGS =  -O0 -g3 -Wall -fbounds-check -pedantic -fbacktrace -fimplicit-none -Wunderflow -Wuninitialized -ffpe-trap=invalid,zero,overflow -fdefault-real-8
     ASH3DEXEC=Ash3d_TC_debug
 endif
 ifeq ($(RUN), DEBUGOMP)
@@ -331,7 +329,7 @@ ifeq ($(RUN), OMPOPT)
 endif
 
       # Preprocessing flags
-    FPPFLAGS =  -x f95-cpp-input $(DATAFPPFLAGS) $(VERBFPPFLAG) $(LIMFPPFLAG) $(DIFFFPPFLAG) $(TCFPPFLAG) $(SCFPPFLAG) $(CYCFPPFLAG) $(memFPPFLAG) $(extdatFPPFLAG) $(FASTFPPFLAG)
+    FPPFLAGS =  -x f95-cpp-input $(OSFPPFLAG) $(DATAFPPFLAG) $(LIMFPPFLAG) $(DIFFFPPFLAG) $(memFPPFLAG) $(extdatFPPFLAG) $(FASTFPPFLAG) $(PIIFPPFLAG) $(TCFPPFLAG) $(SCFPPFLAG) $(CYCFPPFLAG)
       # Extra flags
     #EXFLAGS = -xf95
     EXFLAGS =
@@ -377,6 +375,7 @@ endif
 
 OBJECTS = \
 Ash3d_VariableModules.o  \
+Ash3d_OS_info.o          \
 Input_Data.o             \
 Help.o                   \
 VotW.o                   \
@@ -407,8 +406,8 @@ ifeq ($(USENETCDF), T)
 endif
 
 Ash3d_TC: $(OBJECTS) $(DATAOBJ) $(OPTMODS_OBJ) Ash3d_TC.F90 $(MFILE)
-	$(FC) $(FPPFLAGS) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) $(LIBS) -c Ash3d_TC.F90 
-	$(FC) $(FFLAGS) $(EXFLAGS) $(OBJECTS) $(DATAOBJ) Ash3d_TC.o $(OPTMODS_OBJ) $(LIBS) -o $(ASH3DEXEC)
+	$(FC) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) $(LIBS) -c Ash3d_TC.F90 
+	$(FC) $(FFLAGS) $(EXFLAGS) $(OBJECTS) $(DATAOBJ) Ash3d_TC.o $(OPTMODS_OBJ) $(LIBS) -o Ash3d_TC
 	mkdir -p ../bin
 	cp $(ASH3DEXEC) ../bin/Ash3d
 	mv $(ASH3DEXEC) ../bin/$(ASH3DEXEC)
@@ -418,7 +417,7 @@ Ash3d_TC: $(OBJECTS) $(DATAOBJ) $(OPTMODS_OBJ) Ash3d_TC.F90 $(MFILE)
 Ash3d_VariableModules.o: $(ASH3dCCSRC)/Ash3d_VariableModules.f90 $(MFILE)
 	$(ASH3dCCSRC)/get_version.sh
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Ash3d_VariableModules.f90
-Input_Data.o: $(ASH3dCCSRC)/Input_Data.f90 $(MFILE) Ash3d_VariableModules.o Help.o Tephra.o VotW.o Diffusion.o Airports.o $(DATAOBJ) Output_Vars.o Source.o
+Input_Data.o: $(ASH3dCCSRC)/Input_Data.f90 $(MFILE) Ash3d_VariableModules.o Tephra.o Help.o VotW.o Diffusion.o Airports.o $(DATAOBJ)
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Input_Data.f90
 ResetParams.o: $(ASH3dCCSRC)/ResetParams.f90 $(MFILE) Ash3d_VariableModules.o Tephra.o Output_Vars.o Source_Umbrella.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/ResetParams.f90
@@ -467,11 +466,11 @@ Set_BC.o: $(ASH3dCCSRC)/Set_BC.f90 $(MFILE) Ash3d_VariableModules.o
 # Output
 Output_Vars.o: $(ASH3dCCSRC)/Output_Vars.f90 $(MFILE) Ash3d_VariableModules.o Airports.o Tephra.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Output_Vars.f90
-Output_Results.o: $(ASH3dCCSRC)/Output_Results.f90 $(MFILE) Ash3d_VariableModules.o Output_Vars.o write_BINARY.o write_ASCII.o write_KML.o write_NETCDF.o
+Output_Results.o: $(ASH3dCCSRC)/Output_Results.f90 $(MFILE) Ash3d_VariableModules.o Output_Vars.o Tephra.o write_ASCII.o write_KML.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Output_Results.f90
-write_ASCII.o: $(ASH3dCCSRC)/write_ASCII.f90 $(MFILE) Ash3d_VariableModules.o Output_Vars.o Airports.o Tephra.o Source.o
+write_ASCII.o: $(ASH3dCCSRC)/write_ASCII.f90 $(MFILE) Ash3d_VariableModules.o Airports.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/write_ASCII.f90
-write_BINARY.o: $(ASH3dCCSRC)/write_BINARY.f90 $(MFILE) Ash3d_VariableModules.o
+write_BINARY.o: $(ASH3dCCSRC)/write_BINARY.f90 $(MFILE) Ash3d_VariableModules.o Airports.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/write_BINARY.f90
 ifeq ($(USENETCDF), T)
 write_NETCDF.o: $(ASH3dCCSRC)/write_NETCDF.f90 $(MFILE) Ash3d_VariableModules.o Output_Vars.o Airports.o Tephra.o Source.o Source_Umbrella.o

@@ -7,6 +7,17 @@
       use Atmosphere,    only : &
          R_GAS_DRYAIR
 
+      implicit none
+
+        ! Set everything to private by default
+      private
+
+        ! Publicly available subroutines/functions
+      public set_TestCase_globvars,set_TestCase_windfield,DistSource,&
+             Testcase_CalcErrors
+
+        ! Publicly available variables
+
       integer :: TestCase
       logical :: fullASCIIOutput
       integer :: SubCase
@@ -20,27 +31,27 @@
       !real(kind=ip) :: MMS_suthcons  = 117.0_ip     ! Sutherland Constant (K)
       !real(kind=ip) :: MMS_suthtref  = 273.0_ip     ! Sutherland Ref
       !temperature (K)
-      real(kind=ip) :: MMS_eta0      = 1.8325e-5_ip   ! Ref visc (Pa s)
-      real(kind=ip) :: MMS_suthcons  = 120.0_ip     ! Sutherland Constant (K)
-      real(kind=ip) :: MMS_suthtref  = 296.16_ip     ! Sutherland Ref temperature (K)
+      !real(kind=ip) :: MMS_eta0      = 1.8325e-5_ip   ! Ref visc (Pa s)
+      !real(kind=ip) :: MMS_suthcons  = 120.0_ip     ! Sutherland Constant (K)
+      !real(kind=ip) :: MMS_suthtref  = 296.16_ip     ! Sutherland Ref temperature (K)
 
       real(kind=ip) :: MMS_ztrop     = 10000.0_ip   ! Height of troposphere (m)
-      real(kind=ip) :: MMS_Ffac1     = 1.39896599613964_ip  ! WilsonHuang fac1
-      real(kind=ip) :: MMS_Ffac2     = 0.635137780328017_ip ! WilsonHuang fac2
-      real(kind=ip) :: MMS_Rs        = R_GAS_DRYAIR
-      real(kind=ip) :: MMS_temper0   = 300.0_ip     ! Surf temp (K)
-      real(kind=ip) :: MMS_pres0     = 100000.0_ip     ! Surf pres (Pa)
-      real(kind=ip) :: MMS_skinz     = 7000.0_ip    ! pres skin depth (m)
-      real(kind=ip) :: MMS_lpsr      = -0.007_ip    ! lapse rate (K/m)
-      real(kind=ip) :: MMS_diam      = 0.0001_ip    ! grain size (m)
-      real(kind=ip) :: MMS_rhom      = 2000.0_ip    ! density (kg/m3)
+      !real(kind=ip) :: MMS_Ffac1     = 1.39896599613964_ip  ! WilsonHuang fac1
+      !real(kind=ip) :: MMS_Ffac2     = 0.635137780328017_ip ! WilsonHuang fac2
+      !real(kind=ip) :: MMS_Rs        = R_GAS_DRYAIR
+      !real(kind=ip) :: MMS_temper0   = 300.0_ip     ! Surf temp (K)
+      !real(kind=ip) :: MMS_pres0     = 100000.0_ip     ! Surf pres (Pa)
+      !real(kind=ip) :: MMS_skinz     = 7000.0_ip    ! pres skin depth (m)
+      !real(kind=ip) :: MMS_lpsr      = -0.007_ip    ! lapse rate (K/m)
+      !real(kind=ip) :: MMS_diam      = 0.0001_ip    ! grain size (m)
+      !real(kind=ip) :: MMS_rhom      = 2000.0_ip    ! density (kg/m3)
       real(kind=ip) :: MMS_U0        = -10.0_ip      ! ref x vel (m/s)
       real(kind=ip) :: MMS_V0        = -10.0_ip      ! ref y vel (m/s)
       real(kind=ip) :: MMS_W0        = 1.0_ip       ! ref z vel (m/s)
       real(kind=ip) :: MMS_Q0        = 1.0e10_ip    ! ref concen (kg/m3)
       real(kind=ip) :: MMS_zeta0     = 200000.0_ip    ! ref zeta (m)
       real(kind=ip) :: MMS_qxylen    = 200000.0_ip     ! horiz length of solution (m)
-      real(kind=ip) :: MMS_vzlen     = 100000.0_ip     ! horiz length of vz (m)
+      !real(kind=ip) :: MMS_vzlen     = 100000.0_ip     ! horiz length of vz (m)
 
       logical :: MMS_USE_X    = .true.
       logical :: MMS_USE_Y    = .true.
@@ -63,7 +74,9 @@
       subroutine set_TestCase_globvars
 
       use global_param,  only : &
-         useVertAdvect,useHorzAdvect,DT_MIN,DT_MAX,KM2_2_M2,HR_2_S
+         useVertAdvect,useHorzAdvect,&
+         !DT_MIN,DT_MAX,&
+         KM2_2_M2,HR_2_S
 
       use mesh,          only : &
         ZPADDING
@@ -202,7 +215,6 @@
       !  DT_MAX    = 1.0e-5_ip
       !endif
 !#endif
-
       do io=1,2;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"       TestCase = ",TestCase
         write(outlog(io),*)"        SubCase = ",SubCase
@@ -418,18 +430,14 @@
             vy_pd(:,:,:) = -1.0_ip
           endif
         else
-          do io=1,2;if(VB(io).le.verbosity_error)then
-            write(outlog(io),*)"Invalid SubCase"
-          endif;enddo
+          write(global_info,*)"Invalid SubCase"
           stop 1
         endif
       endif
 
       if(TestCase.eq.2)then
         if(ZPADDING.gt.1.0_ip)then
-          do io=1,2;if(VB(io).le.verbosity_error)then
-            write(outlog(io),*)"ERROR: ZPADDING != 1.0"
-          endif;enddo
+          write(global_info,*)"ERROR: ZPADDING != 1.0"
           stop 1
         endif
         ! Test case 2 has a wind field SubCase
@@ -550,9 +558,7 @@
       if(TestCase.eq.6)then
         ! MMS
         if(IsLatLon)then
-          do io=1,2;if(VB(io).le.verbosity_info)then
-            write(outlog(io),*)"MMS solution only in Cartesian."
-          endif;enddo
+          write(global_info,*)"MMS solution only in Cartesian."
           stop 1
         else
           ! Vx is constant
@@ -736,8 +742,8 @@
          PI
 
       use mesh,          only : &
-         nxmax,nymax,nzmax,nsmax,lat_cc_pd,lon_cc_pd,kappa_pd,z_cc_pd,dz_vec_pd,&
-         x_cc_pd,y_cc_pd,ts0,IsLatLon,dx,dy
+         nxmax,nymax,nzmax,nsmax,lat_cc_pd,lon_cc_pd,kappa_pd,z_cc_pd,&
+         x_cc_pd,y_cc_pd,ts0,IsLatLon !,dx,dy
 
       use solution,      only : &
          concen_pd
@@ -1140,8 +1146,8 @@
 
       real(kind=ip) :: MassConsError
       real(kind=ip) :: TotalVol
-      real(kind=ip) :: coeff,coeff2,eta1,eta2
-      real(kind=ip) :: kappa1,kappa2,xm,ym,zm,Tc
+      real(kind=ip) :: eta1,eta2
+      real(kind=ip) :: xm,ym,zm,Tc
 
       !real(kind=ip) :: MMS_TrueSol
 
@@ -1529,17 +1535,20 @@
           L1_toterror = L1_toterror / (nsmax * TotalVol)
           L2_toterror = L2_toterror / nsmax
           L2_toterror = sqrt(L2_toterror) / TotalVol
+          write(global_info,*)"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+          write(global_info,*)" Original total mass = ",total_mass
+          write(global_info,*)" Calculated mass = ",MassConsError
+          MassConsError = abs((MassConsError-total_mass)/total_mass)
+          write(global_info,*)" Mass ratio = ",MassConsError
+          write(global_info,*)"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+
           do io=1,2;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
             write(outlog(io),*)" Original total mass = ",total_mass
             write(outlog(io),*)" Calculated mass = ",MassConsError
-          endif;enddo
-          MassConsError = abs((MassConsError-total_mass)/total_mass)
-          do io=1,2;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)" Mass ratio = ",MassConsError
             write(outlog(io),*)"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
           endif;enddo
-
           write(ofile1,'(a14)')'TC3_LL_err.dat'
           open(200,file=ofile1,status='replace')
           write(200,*)L1_toterror,L2_toterror,MassConsError
@@ -1656,9 +1665,7 @@
                 elseif (SubCase.eq.3.or.SubCase.eq.6) then
                   err3D(i,j,k)=tsolz(k)-concen_pd(i,j,k,n,ts1)
                 else
-                  do io=1,2;if(VB(io).le.verbosity_error)then
-                    write(errlog(io),*)"ERROR: Subcase not known.  Stopping program."
-                  endif;enddo
+                  write(global_error,*)"Subcase not known.  Stopping program."
                   stop 1
                 endif
 
@@ -1699,9 +1706,7 @@
         endif
         close(200)
         close(201)
-        do io=1,2;if(VB(io).le.verbosity_info)then
-          write(outlog(io),*)"Wrote to files TC4_err.dat and TC4_sol.dat"
-        endif;enddo
+        write(global_info,*)"Wrote to files TC4_err.dat and TC4_sol.dat"
       endif
 
       if(TestCase.eq.5)then

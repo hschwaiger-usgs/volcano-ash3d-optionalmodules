@@ -109,14 +109,6 @@
          Airport_thickness_TS,Airport_thickness,nairports,&
            ReadAirports
 
-      use Ash3d_ASCII_IO,  only : &
-           vprofilewriter
-
-#ifdef USENETCDF
-      use Ash3d_Netcdf_IO,only : &
-           NC_RestartFile_LoadConcen
-#endif
-
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES
 !         Insert 'use' statements here
@@ -128,26 +120,30 @@
 
       implicit none
 
+      integer               :: iostatus
       integer               :: itime
       integer               :: i,k,isize
       real(kind=dp)         :: Interval_Frac
       logical               :: Load_MesoSteps
       logical               :: StopTimeLoop   = .false.
+      logical               :: first_time     = .true.
+      character(len=130)    :: tmp_str
       real(kind=ip)         :: MassConsErr
 
       INTERFACE
-        subroutine input_data_ResetParams
-        end subroutine input_data_ResetParams
+        subroutine Read_Control_File
+        end subroutine
         subroutine alloc_arrays
         end subroutine alloc_arrays
         subroutine calc_mesh_params
-        end subroutine calc_mesh_params
-        subroutine MesoInterpolater(TimeNow,Load_MesoSteps,Interval_Frac)
+        end subroutine
+        subroutine MesoInterpolater(TimeNow,Load_MesoSteps,Interval_Frac,first_time)
           integer,parameter  :: dp         = 8 ! Double precision
-          real(kind=dp),intent(in)    :: TimeNow
-          real(kind=dp),intent(out)   :: Interval_Frac
-          logical      ,intent(inout) :: Load_MesoSteps
-        end subroutine MesoInterpolater
+          real(kind=dp),intent(in)  :: TimeNow
+          real(kind=dp),intent(out) :: Interval_Frac
+          logical      ,intent(out) :: Load_MesoSteps
+          logical      ,intent(in)  :: first_time
+        end subroutine
          ! We do need to call Adjust_DT from this top-level file
         subroutine Adjust_DT(mesostep)
           logical, intent(in), optional :: mesostep
@@ -156,7 +152,10 @@
         end subroutine output_results
         subroutine Set_BC(bc_code)
           integer,intent(in) :: bc_code ! 1 for advection, 2 for diffusion
-        end subroutine Set_BC
+        end subroutine
+        subroutine vprofilewriter(itime)
+          integer, intent(in) :: itime
+        end subroutine
         subroutine TimeStepTotals(itime)
           integer, intent(in) :: itime
         end subroutine TimeStepTotals
@@ -164,14 +163,28 @@
         end subroutine dealloc_arrays
       END INTERFACE
 
-      ! Start time logging
-      call cpu_time(t0) !time is a scaler real
-
-      ! First, parse the command line
-      call Parse_Command_Line
-
-      ! Before we do anything, get the state of the executable, system, environment and run
-      call Set_OS_Env
+      ! Set the default installation path
+      ! This is only needed if shared data files with fixed paths are read
+      ! in such as the global airport and volcano ESP files.
+      Ash3dHome = '/opt/USGS/Ash3d'
+      ! Here it is over-written by compile-time path, if available
+#include "installpath.h"
+      ! This can be over-written if an environment variable is set
+      call GET_ENVIRONMENT_VARIABLE(NAME="ASH3DHOME",VALUE=tmp_str,STATUS=iostatus)
+      if(iostatus.eq.0)then
+        Ash3dHome = tmp_str
+        write(global_info,*)&
+          "Install path reset by environment variable to: ",Ash3dHome
+      endif
+      call GET_ENVIRONMENT_VARIABLE(NAME="ASH3DCFL",VALUE=tmp_str,STATUS=iostatus)
+      if(iostatus.eq.0)then
+        read(tmp_str,*)CFL
+        write(global_info,*)&
+          "CFL condition reset by environment variable to: ",CFL
+      else
+        write(global_info,*)&
+          "CFL condition : ",CFL
+      endif
 
       aloft_percent_remaining = 1.0_ip
       SourceCumulativeVol     = 0.0_ip
@@ -194,20 +207,11 @@
 !  compiled in this executable and for consistency among modules:
 !  e.g. SRC_RESUSP will require the VARDIFF and LC be set
 !
-      do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),*)"Now looping through optional modules found in input file"
-      endif;enddo
-      do i=1,nmods
-        do io=1,2;if(VB(io).le.verbosity_essential)then
-          write(outlog(io),*)"Testing for ",OPTMOD_names(i),i
-        endif;enddo
-        if(OPTMOD_names(i).eq.'RESETPARAMS')then
-          do io=1,2;if(VB(io).le.verbosity_essential)then
-            write(outlog(io),*)"  Reading input block for RESETPARAMS"
-          endif;enddo
-          call input_data_ResetParams
-        endif
-      enddo
+      DO j=1,nmods
+        write(global_info,*)"Testing for ",OPTMOD_names(j),j
+!#ifdef TESTCASES
+!#endif
+      ENDDO
 !
 !------------------------------------------------------------------------------
 
@@ -309,9 +313,9 @@
         call Allocate_Profile(nzmax,ntmax,nvprofiles)
       endif
 
-      do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),5007)
-      endif;enddo
+      ! write "Building time array of plume height & eruption rate"
+      write(global_info,7)
+      write(global_log ,7)
 
       ! Calculate mass flux and end times of each eruptive pulse
       call EruptivePulse_MassFluxRate
@@ -320,9 +324,8 @@
 #endif
 
       ! Write out starting volume, max time steps, and headers for the table that follows
-      do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),5001) tot_vol,ntmax
-      endif;enddo
+      write(global_info,1) tot_vol,ntmax
+      write(global_log ,1) tot_vol,ntmax
 
       ! Get the cpu time for the start of the time loop
       call cpu_time(t1) !time is a scaler real
@@ -373,10 +376,9 @@
         call Adjust_DT(.false.)
 #endif
 !------------------------------------------------------------------------------
-
-          ! Determine if (and which) eruptive pulses are active in the current dt
-#ifndef TESTCASES 
-        call CheckEruptivePulses
+        if(VERB.gt.1)write(global_info,*)"Ash3d: Calling MassFluxCalculator"
+#ifndef TESTCASES
+        call MassFluxCalculator         ! call subroutine that determines mass flux & plume height
 #endif
 
 !------------------------------------------------------------------------------
@@ -396,46 +398,51 @@
             ! Calculating the flux into the vent column
             call TephraSourceNodes
 
-            ! Most standard source types (point, line, profile, suzuki) are
-            ! integrated as follows.
-            concen_pd(ivent,jvent,1:nzmax+1,1:n_gs_max,ts0) =  &
-                concen_pd(ivent,jvent,1:nzmax+1,1:n_gs_max,ts0) +  &
-                  real(dt,kind=ip) * &
-                  SourceNodeFlux(1:nzmax+1,1:n_gs_max)
-
-            ! Keep track of the accumulated source inserted for mass conservation error-checking
-            SourceCumulativeVol = SourceCumulativeVol + SourceVolInc(dt)
-
-          elseif (SourceType.eq.'umbrella'.or. &
-                 (SourceType.eq.'umbrella_air')) then
-            ! Umbrella clouds have a special source insertion with a 3x3 column
-
-            ! Umbrella sources still need the Suzuki distribution of mass above the vent
-            ! Calculating the flux into the vent column
-            call TephraSourceNodes
-
-            ! Now modify the above result to distribute the total SourceNodeFlux
-            ! into the umbrella form
-            call TephraSourceNodes_Umbrella
-
-            ! Before source insertion, we smooth over the concentration over the
-            ! 3x3 patch within the umbrella zone using the weighted averaging stencil
-            do k=ibase,itop
-              do isize=1,n_gs_max
-                concen_pd(ivent-1:ivent+1,jvent-1:jvent+1,k,isize,ts0) = &
-                  AvgCon_Umbrella(concen_pd(ivent-1:ivent+1,jvent-1:jvent+1,k,isize,ts0),k)
+            ! Now integrate the ash concentration with the SourceNodeFlux
+            if (SourceType.eq.'umbrella'.or. &
+               (SourceType.eq.'umbrella_air')) then
+              ! Umbrella clouds have a special integration
+              !  Below the umbrella cloud, add ash to vent nodes as above
+              concen_pd(ivent,jvent,1:ibase-1,1:n_gs_max,ts0) =          & ! 
+                       concen_pd(ivent,jvent,1:ibase-1,1:n_gs_max,ts0) + & ! kg/km3
+                       dt                                              * & ! hr
+                       SourceNodeFlux(1:ibase-1,1:n_gs_max)                ! kg/km3 hr
+              do iz=ibase,itop
+                !Within the cloud: first, average the concentration that curently
+                !exists in the 9 cells surrounding the vent
+                do isize=1,n_gs_max
+                  avgcon=sum(concen_pd(ivent-1:ivent+1,jvent-1:jvent+1,iz,isize,ts0))/9.0_ip
+                  concen_pd(ivent-1:ivent+1,jvent-1:jvent+1,iz,isize,ts0)=avgcon
+                enddo
               enddo
-            enddo
-            ! Here the integration is the same as for standard sources (point, line, profile, suzuki),
-            ! except we use a 3x3 column around ivent,jvent instead of just a single-node column.
-            concen_pd(ivent-1:ivent+1,jvent-1:jvent+1,1:nzmax+1,1:n_gs_max,ts0) =  &
-                concen_pd(ivent-1:ivent+1,jvent-1:jvent+1,1:nzmax+1,1:n_gs_max,ts0)  +  &
-                  real(dt,kind=ip) * &
-                  SourceNodeFlux_Umbrella(1:3,1:3,1:nzmax+1,1:n_gs_max)
-
-            ! Keep track of the accumulated source inserted for mass conservation error-checking
-            SourceCumulativeVol = SourceCumulativeVol + SourceVolInc_Umbrella(dt)
-
+              !Then, add tephra to the 9 nodes surrounding the vent
+              do ii=ivent-1,ivent+1
+                do jj=jvent-1,jvent+1
+                  do iz=ibase,itop
+                    concen_pd(ii,jj,iz,1:n_gs_max,ts0) =                &
+                              concen_pd(ii,jj,iz,1:n_gs_max,ts0)        &
+                                 + dt*SourceNodeFlux(iz,1:n_gs_max)
+                  enddo
+                enddo
+              enddo
+            else ! (SourceType.eq.'umbrella' or 'umbrella_air')
+              ! All other standard source types (point,line,profile, suzuki) are
+              ! integrated as follows.
+              concen_pd(ivent,jvent,1:nzmax+1,1:n_gs_max,ts0) =  &
+              concen_pd(ivent,jvent,1:nzmax+1,1:n_gs_max,ts0)    &
+                + dt*SourceNodeFlux(1:nzmax+1,1:n_gs_max)
+              ! this part is just for book-keeping and error checking
+              do ii=1,n_gs_max
+                do k=1,nzmax+1
+                  SourceCumulativeVol = SourceCumulativeVol + & ! final units is km3
+                    dt                              * & ! hr
+                    SourceNodeFlux(k,ii)            * & ! kg/km3 hr
+                    kappa_pd(ivent,jvent,k)         / & ! km3
+                    MagmaDensity                    / & ! kg/m3
+                    KM3_2_M3                            ! m3/km3
+                enddo
+              enddo
+            endif
           else
             ! This is not a standard source.
             do io=1,2;if(VB(io).le.verbosity_info)then
@@ -587,10 +594,8 @@
         if(SourceCumulativeVol.gt.EPS_TINY)then
           MassConsErr = abs(SourceCumulativeVol-tot_vol)/SourceCumulativeVol
         endif
-           ! Error stop condition if the concen and outflow do not match the source,
-           ! but only trigger this condition if not a restart case (until outflow is tracked)
-        if(.not.LoadConcen) &
-          StopConditions(4) = (MassConsErr.gt.1.0e-3_ip)
+           ! Error stop condition if the concen and outflow do not match the source
+        StopConditions(4) = (MassConsErr.gt.1.0e-3_ip)
            ! Error stop condition if any volume measure is negative
         StopConditions(5) = (dep_vol.lt.-1.0_ip*EPS_SMALL).or.&
                             (aloft_vol.lt.-1.0_ip*EPS_SMALL).or.&
@@ -680,16 +685,13 @@
       ! ************************************************************************
 
       isFinal_TS = .true.
-      Called_Gen_Output_Vars  = .false.
-      Calculated_Cloud_Load   = .false.
-      Calculated_AshThickness = .false.
-
-      do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),5012)   ! put footnotes below output table
-        write(outlog(io),*)'time=',real(time,kind=4),',dt=',real(dt,kind=4)
-        write(outlog(io),*)"Mass Conservation Error = ",MassConsErr
-      endif;enddo
-
+      write(global_info,12)   !put footnotes below output table
+      write(global_log,12)   !put footnotes below output table
+      write(global_log ,12)
+      write(global_info,*)'time=',real(time,kind=4),',dt=',real(dt,kind=4)
+      write(global_log,*)'time=',real(time,kind=4),',dt=',real(dt,kind=4)
+      write(global_info,*)"Mass Conservation Error = ",MassConsErr
+      write(global_log,*)"Mass Conservation Error = ",MassConsErr
         ! Make sure we have the latest output variables and go to write routines
       call Gen_Output_Vars
 !------------------------------------------------------------------------------
@@ -699,23 +701,22 @@
 !------------------------------------------------------------------------------
 
       call output_results
-      ! Write results to log and standard output
-      call cpu_time(t2) ! time is a scalar real
-      do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),5003) t1-t0, t2-t1, time*HR_2_S
-        write(outlog(io),5004) time*HR_2_S/(t2-t1)
-      endif;enddo
+
+      !WRITE RESULTS TO LOG AND STANDARD OUTPUT
+      !TotalTime_sp = etime(elapsed_sp)
+      !write(global_info,*) elapsed_sp(2), time*3600.0_ip
+      call cpu_time(t1) !time is a scalar real 
+      write(global_info,3) t1-t0, time*HR_2_S
+      write(global_log ,3) t1-t0, time*HR_2_S
+      write(global_info,4) time*HR_2_S/(t1-t0)
+      write(global_log ,4) time*HR_2_S/(t1-t0)
       call TimeStepTotals(itime)
-      do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),5005) dep_vol
-        write(outlog(io),5006) tot_vol
-        write(outlog(io),5009) maxval(DepositThickness), DepositAreaCovered
-        write(outlog(io),5034)       ! write out area of cloud at different thresholds
-        do i=1,5
-          write(outlog(io),5035) LoadVal(i), CloudLoadArea(i)
-        enddo
-        write(outlog(io),5033)       ! write "normal completion"
-      endif;enddo
+      write(global_info,5) dep_vol
+      write(global_log ,5) dep_vol
+      write(global_info,6) tot_vol
+      write(global_log ,6) tot_vol
+      write(global_info,9) maxval(DepositThickness), DepositAreaCovered
+      write(global_log ,9) maxval(DepositThickness), DepositAreaCovered
 
       ! Format statements
       ! Starting with 5000
@@ -746,12 +747,11 @@
 
       ! clean up memory
       call dealloc_arrays
+
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES
 !         Insert calls deallocation routines here
 !
 !------------------------------------------------------------------------------
-
-      close(fid_logfile)       !close log file 
 
       end program Ash3d
