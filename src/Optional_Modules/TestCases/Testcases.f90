@@ -430,14 +430,18 @@
             vy_pd(:,:,:) = -1.0_ip
           endif
         else
-          write(global_info,*)"Invalid SubCase"
+          do io=1,2;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"ERROR Invalid SubCase"
+          endif;enddo
           stop 1
         endif
       endif
 
       if(TestCase.eq.2)then
         if(ZPADDING.gt.1.0_ip)then
-          write(global_info,*)"ERROR: ZPADDING != 1.0"
+          do io=1,2;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"ERROR: ZPADDING != 1.0"
+          endif;enddo
           stop 1
         endif
         ! Test case 2 has a wind field SubCase
@@ -558,7 +562,9 @@
       if(TestCase.eq.6)then
         ! MMS
         if(IsLatLon)then
-          write(global_info,*)"MMS solution only in Cartesian."
+          do io=1,2;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MMS solution only in Cartesian."
+          endif;enddo
           stop 1
         else
           ! Vx is constant
@@ -1535,13 +1541,7 @@
           L1_toterror = L1_toterror / (nsmax * TotalVol)
           L2_toterror = L2_toterror / nsmax
           L2_toterror = sqrt(L2_toterror) / TotalVol
-          write(global_info,*)"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
-          write(global_info,*)" Original total mass = ",total_mass
-          write(global_info,*)" Calculated mass = ",MassConsError
           MassConsError = abs((MassConsError-total_mass)/total_mass)
-          write(global_info,*)" Mass ratio = ",MassConsError
-          write(global_info,*)"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-
           do io=1,2;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
             write(outlog(io),*)" Original total mass = ",total_mass
@@ -1665,7 +1665,9 @@
                 elseif (SubCase.eq.3.or.SubCase.eq.6) then
                   err3D(i,j,k)=tsolz(k)-concen_pd(i,j,k,n,ts1)
                 else
-                  write(global_error,*)"Subcase not known.  Stopping program."
+                  do io=1,2;if(VB(io).le.verbosity_error)then
+                    write(errlog(io),*)"ERROR: Subcase not known.  Stopping program."
+                  endif;enddo
                   stop 1
                 endif
 
@@ -1706,7 +1708,9 @@
         endif
         close(200)
         close(201)
-        write(global_info,*)"Wrote to files TC4_err.dat and TC4_sol.dat"
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Wrote to files TC4_err.dat and TC4_sol.dat"
+        endif;enddo
       endif
 
       if(TestCase.eq.5)then

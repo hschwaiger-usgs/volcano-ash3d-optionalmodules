@@ -1,11 +1,11 @@
 clear all;
 
-nresmax  = 3;
+nresmax  = 2;
 nres  = char('50000','25000','12500','06250','03125');
 resdx = [0.05000 0.025000 0.012500 0.006250 0.003125];
 nx    = [40 80 160 320 640];
 ny    = [40 80 160 320 640];
-subcase = 5;
+subcase = 1;
 % Horizontal advection:
 %  subcase 1 : x+y0
 %  subcase 2 : x-y0
@@ -18,7 +18,7 @@ subcase = 5;
 
 nlim_label = char('LIM_NO','LIM_SB','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_MC');
 
-ilim=7;
+ilim=1;
 inres=nresmax;
 
 dx = resdx(inres);
