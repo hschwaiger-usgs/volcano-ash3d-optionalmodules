@@ -79,6 +79,7 @@ do
    echo $k ' of ' ${idx}
    echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
    ${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp
+   exit
    status=$?
    if [ $status -ne 0 ]; then
       echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"

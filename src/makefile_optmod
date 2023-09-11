@@ -308,7 +308,7 @@ ifeq ($(SYSTEM), gfortran)
 ifeq ($(RUN), DEBUG)
     FFLAGS = -O0 -g3 -Wall -Wextra -fimplicit-none  -Wall  -Wline-truncation  -Wcharacter-truncation  -Wsurprising  -Waliasing  -Wimplicit-interface  -Wunused-parameter  -fwhole-file  -fcheck=all -pedantic  -fbacktrace -Wunderflow -ffpe-trap=invalid,zero,overflow 
 #-fdefault-real-8 -std=f2008 
-    ASH3DEXEC=Ash3d_debug
+    ASH3DEXEC=Ash3d_TC
 endif
 ifeq ($(RUN), DEBUGOMP)
     FFLAGS =  -g3 -pg -Wall -fbounds-check -pedantic -fimplicit-none -Wunderflow -Wuninitialized -Wmaybe-uninitialized -ffpe-trap=invalid,zero,overflow -fdefault-real-8 -fopenmp -lgomp
