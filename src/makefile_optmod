@@ -227,6 +227,7 @@ ifeq ($(USEEXTDATA), T)
 endif
 
 
+
 # location of MetReader, HoursSince and projection
 USGSLIBDIR = -L$(USGSROOT)/lib
 USGSLIB = -lMetReader -lhourssince -lprojection
@@ -350,7 +351,7 @@ ifeq ($(RUN), DEBUG)
 endif
 ifeq ($(RUN), DEBUGOMP)
     FFLAGS = -g2 -pg -warn all -check all -real-size 64 -check uninit -openmp
-    ASH3DEXEC=Ash3d_TC_debugOMP
+    ASH3DEXEC=Ash3d_TC_debugomp
 endif
 # Profiling flags
 ifeq ($(RUN), PROF)
@@ -431,7 +432,7 @@ Airports.o: $(ASH3dCCSRC)/Airports.f90 $(MFILE) Ash3d_VariableModules.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Airports.f90
 Calc_Mesh.o: $(ASH3dCCSRC)/Calc_Mesh.f90 $(MFILE) Ash3d_VariableModules.o Output_Vars.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Calc_Mesh.f90
-Alloc_Arrays.o: $(ASH3dCCSRC)/Alloc_Arrays.f90 $(MFILE) Ash3d_VariableModules.o Output_Vars.o AdvectionHorz.o
+Alloc_Arrays.o: $(ASH3dCCSRC)/Alloc_Arrays.f90 $(MFILE) Ash3d_VariableModules.o Tephra.o Source.o Source_Umbrella.o Diffusion.o Output_Vars.o AdvectionHorz.o Airports.o Atmosphere.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Alloc_Arrays.f90
 Source.o: $(ASH3dCCSRC)/Source.f90 $(MFILE) Ash3d_VariableModules.o Tephra.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3dCCSRC)/Source.f90

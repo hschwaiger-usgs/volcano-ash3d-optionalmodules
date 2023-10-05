@@ -26,7 +26,7 @@ WRKDIR="${ASH3DROOT}/src"
 ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
 TESTCASE=1
 export TESTCASE
-ASH3DCFL=0.99
+ASH3DCFL=0.80
 export ASH3DCFL
 
 # Subcases
@@ -79,12 +79,12 @@ do
    echo $k ' of ' ${idx}
    echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
    ${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp
-   exit
    status=$?
    if [ $status -ne 0 ]; then
       echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
       exit
     else
+      echo "Backing up output files"
       mv TC${TESTCASE}_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_err.dat
       mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
       mv TC${TESTCASE}_Sub${SUBCASE}_St1_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_sol.dat

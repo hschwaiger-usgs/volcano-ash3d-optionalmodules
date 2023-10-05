@@ -1,7 +1,7 @@
 #!/bin/bash
 TestcasesDir=`pwd`
 il=1 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
-ix=3 # 5 is the max coded but that takes overnight
+ix=5 # 5 is the max coded but that takes overnight
 
 #il=6 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
 #ix=5 # 5 is the max coded but that takes overnight
@@ -16,7 +16,7 @@ fi
 
 # Specify which cases to turn off, by setting the corresponding value to 0
     #  1 2 3 4 5
-cases=(1 0 0 0 0)
+cases=(1 1 1 1 1)
 
 if [ "$[cases[0]]" -eq 1 ]; then
   cd ${TestcasesDir}/TC1
