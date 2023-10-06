@@ -1,3 +1,42 @@
+!##############################################################################
+!
+!  TestCases module
+!
+!  This module is structured as an optional module and sets up the cases
+!  for Ash3d convergence tests.  The test cases implemented are:
+!    1: horizontal advection (both Cartesian and Spherical)
+!        subcase 1 : x+y0
+!        subcase 2 : x-y0
+!        subcase 3 : x0y+
+!        subcase 4 : x0y-
+!        subcase 5 : x+y+
+!        subcase 6 : x-y-
+!        subcase 7 : x-y+
+!        subcase 8 : x+y-
+!    2: vertical advection (Cartesian only)
+!        subcase 1 : Wind blows up (no fall velocity)
+!        subcase 2 : Wind blows down (no fall velocity)
+!        subcase 3 : No z wind (fall velocity +)
+!        subcase 4 : No z wind (fall velocity -)
+!    3: Horizontal rotation of block and cone (both Cartesian and Spherical)
+!
+!    4: Diffusion (Cartesian only)
+!
+!    5: Horizontal rotational shear (both Cartesian and Spherical)
+!
+!    6: Method of manufactured solutions (Cartesian only)
+!
+!      subroutine set_TestCase_globvars
+!      subroutine set_TestCase_windfield
+!      subroutine set_LL_wind
+!      subroutine DistSource
+!      subroutine Testcase_CalcErrors
+!      subroutine back_rotate
+!      function MMS_TrueSol
+!      function MMS_Source
+!
+!##############################################################################
+
       module TestCases
 
       use precis_param
@@ -68,14 +107,26 @@
       real(kind=ip) :: L2_toterror
 
       contains
+      !------------------------------------------------------------------------
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  set_TestCase_globvars
+!
+!  Called from: Ash3d_TC.F90
+!  Arguments:
+!    none
+!
+!  This subroutine just sets the global variables that control the flow of the
+!  program for each test case; i.e. whether or not the use vertical/horizontal
+!  advection or diffusion.
+!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine set_TestCase_globvars
 
       use global_param,  only : &
          useVertAdvect,useHorzAdvect,&
-         !DT_MIN,DT_MAX,&
          KM2_2_M2,HR_2_S
 
       use mesh,          only : &
@@ -206,15 +257,6 @@
       SubCase = 8
 #endif
 
-!#ifdef TESTCASE_4
-      ! Diffusion
-      !if (SubCase.gt.3)then
-      !  ! For CN integrations with no advection, we need to specify the
-      !  ! time step explicitly
-      !  DT_MIN    = 1.0e-5_ip
-      !  DT_MAX    = 1.0e-5_ip
-      !endif
-!#endif
       do io=1,2;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"       TestCase = ",TestCase
         write(outlog(io),*)"        SubCase = ",SubCase
@@ -227,7 +269,23 @@
       end subroutine set_TestCase_globvars
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+!
+!  set_TestCase_windfield
+!
+!  Called from: Ash3d_TC.F90
+!  Arguments:
+!    none
+!
+!  This subroutine sets the windfield for each test case:
+!   1. horizontal advection in 8 directions (note that for spherical coordinates
+!      we need to calculate wind speeds using rigid rotation of a sphere)
+!   2. constant vertical wind speed
+!   3. rigid-body horizontal rotation
+!   4. no wind for the diffusion case
+!   5. transient rotational shear that deforms, then recovers
+!   6. 3d easy-to-integrate winds used in the method of manufactured solution case
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine set_TestCase_windfield
 
@@ -601,6 +659,20 @@
       end subroutine set_TestCase_windfield
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  set_LL_wind
+!
+!  Called from: set_TestCase_windfield
+!  Arguments: 
+!    lon_pt,lat_pt,z_pt
+!    lon_pole,lat_pole,omega
+!    ve_out,vn_out
+!
+!  This subroutine takes a point in spherical coordinates (lon,lat,altiture),
+!  along with a pole of rotation + rotation rate, and returns the ve and vn
+!  components of velocity at that point for the given rigid-body rotation.
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine set_LL_wind(lon_pt,lat_pt,z_pt,             &
                              lon_pole,lat_pole,omega,        &
@@ -740,6 +812,24 @@
 
       end subroutine set_LL_wind
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  DistSource
+!
+!  Called from: Ash3d_TC.F90
+!  Arguments: 
+!    none
+!
+!  This subroutine sets the initial distributed source concentration for each
+!  test case:
+!   1. finite-width (h=0.1), 2d cubic-spline kernel positioned at the origin
+!   2. finite-width (h=0.1), 1d cubic-spline kernel positioned at the origin
+!   3. 2D cone/box
+!   4. concentration discontinuity with two half-spaces
+!   5. sine-concentration pulse in the lower left corner of the domain
+!   6. transient source designed around the equations and material properties
+!      for the MMS case.
+!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine DistSource
@@ -1102,7 +1192,17 @@
 
       end subroutine DistSource
 
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  Testcase_CalcErrors
+!
+!  Called from: Ash3d_TC.F90
+!  Arguments: 
+!    none
+!
+!  This subroutine calculated the L1 and L2 errors for each of the test cases
+!  and writes them to an ascii file for post-processing.
+!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine Testcase_CalcErrors
@@ -1836,6 +1936,16 @@
       end subroutine Testcase_CalcErrors
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  MMS_TrueSol
+!
+!  Called from: Testcase_CalcErrors, MMS_Source
+!  Arguments: 
+!    x,y,z,t
+!
+!  This function returns the true solution for the given location and time.
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       function MMS_TrueSol(x,y,z,t)
 
@@ -1904,6 +2014,16 @@
       end function MMS_TrueSol
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  MMS_Source
+!
+!  Called from: DistSource
+!  Arguments: 
+!    x,y,z,t,velx,vely,velz,vels,dws_dz
+!
+!  This function calculated the required source term for the MMS test case.
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       function MMS_Source(x,y,z,t,velx,vely,velz,vels,dws_dz)
 
@@ -2038,7 +2158,18 @@
 
       end function MMS_Source
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  back_rotate
+!
+!  Called from: Testcase_CalcErrors
+!  Arguments: 
+!    lon,lat,lon_pole,lat_pole,deg_rot,lon_br,lat_br
+!
+!  This subroutine takes a lon/lat point, along with a rotation (pole + deg)
+!  and returns the back-rotated coordinate.
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine back_rotate(lon,lat,    &
                              lon_pole,lat_pole,deg_rot, &
@@ -2049,10 +2180,10 @@
 
       implicit none
 
-      real(kind=ip) :: lon,lat
-      real(kind=ip) :: lon_pole,lat_pole
-      real(kind=ip) :: deg_rot
-      real(kind=ip) :: lon_br,lat_br
+      real(kind=ip),intent(in ) :: lon,lat
+      real(kind=ip),intent(in ) :: lon_pole,lat_pole
+      real(kind=ip),intent(in ) :: deg_rot
+      real(kind=ip),intent(out) :: lon_br,lat_br
 
       real(kind=ip),dimension(3,3) :: Rot
       real(kind=ip),dimension(3)   :: xvec,xnew
@@ -2125,5 +2256,8 @@
 
       end subroutine back_rotate
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       end module TestCases
 
+!##############################################################################
