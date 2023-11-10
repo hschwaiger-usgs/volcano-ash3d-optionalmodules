@@ -46,9 +46,9 @@ SYSTEM = gfortran
 #      OMPOPT   : includes optimizations flags for fastest runtime and OpenMP directives
 #                 To run, enter: env OMP_NUM_THREADS=4 Ash3d input_file.inp
 #    This variable cannot be left blank
-#RUN = DEBUG
+RUN = DEBUG
 #RUN = PROF
-RUN = OPT
+#RUN = OPT
 #RUN = OMPOPT
 
 #    This variable cannot be left blank
@@ -63,7 +63,7 @@ USGSROOT=/opt/USGS
 
 # This is the location of the Ash3d core code source files that we will build this
 # research branch with.
-ASH3dCCSRC=~/work/USGS/Software/GIT/Ash3d/src
+ASH3dCCSRC=~/work/USGS/Software/GIT/volcano-ash3d/src
 
 INSTALLDIR=/opt/USGS/Ash3d
 
@@ -104,7 +104,7 @@ MFILE=makefile_optmod
 #      LIM_MINMOD
 #      LIM_SUPERBEE
 #      LIM_MC
-#LIMITER = LIM_SUPERBEE
+LIMITER = LIM_SUPERBEE
 #
 #  DIFFMETH specifies whether or not to use Crank-Nicolson
 #
@@ -129,7 +129,7 @@ MFILE=makefile_optmod
 #      TESTCASE=3 : Circular advection as in Randy's book
 #      TESTCASE=4 : 1-D diffusion of half-space concentration
 #      TESTCASE=5 : Circular shear as in Randy's paper
-#TESTCASE=4
+TESTCASE=6
 #SUBCASE=1
 #
 #  SUBCASE specified whether or not to compile for a test case and which one

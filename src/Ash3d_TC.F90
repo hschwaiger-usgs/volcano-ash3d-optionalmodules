@@ -134,6 +134,7 @@
       logical               :: Load_MesoSteps
       logical               :: StopTimeLoop   = .false.
       real(kind=ip)         :: MassConsErr
+      real(kind=dp)         :: dt_TC
 
       INTERFACE
         subroutine input_data_ResetParams
@@ -291,6 +292,8 @@
 #ifdef TESTCASES
         call set_TestCase_windfield
         call Adjust_DT(.false.)
+        ! Log the initial dt for test cases.  We need this for TC5
+        dt_TC = dt
 #endif
 !------------------------------------------------------------------------------
 
@@ -371,6 +374,7 @@
 #ifdef TESTCASES
         call set_TestCase_windfield
         call Adjust_DT(.false.)
+        dt = dt_TC
 #endif
 !------------------------------------------------------------------------------
 

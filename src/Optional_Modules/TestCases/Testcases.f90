@@ -53,7 +53,7 @@
 
         ! Publicly available subroutines/functions
       public set_TestCase_globvars,set_TestCase_windfield,DistSource,&
-             Testcase_CalcErrors
+             Testcase_CalcErrors,MMS_Source,MMS_TrueSol
 
         ! Publicly available variables
 
@@ -839,13 +839,16 @@
 
       use mesh,          only : &
          nxmax,nymax,nzmax,nsmax,lat_cc_pd,lon_cc_pd,kappa_pd,z_cc_pd,&
-         x_cc_pd,y_cc_pd,ts0,IsLatLon !,dx,dy
+         x_cc_pd,y_cc_pd,ts0,IsLatLon,ts0,ts1,dz_vec_pd
 
       use solution,      only : &
-         concen_pd
+         concen_pd,vx_pd,vy_pd,vz_pd,vf_pd
 
       use Diffusion,     only : &
          kx,ky,kz
+
+      use time_data,     only : &
+         time,dt
 
       implicit none
 
@@ -861,20 +864,20 @@
       !real(kind=ip) :: Const1_3d     = 0.477464829275686_ip
       real(kind=ip) :: lon_shifted
 
-      !real(kind=ip) ::  Vs,Vs_p1,Vs_m1,!dws_dz
-      !real(kind=ip) ::  kap
-      !real(kind=ip) ::  zeta
-      !real(kind=ip) ::  xcc,ycc,zcc
-      !real(kind=ip) ::  x_qxylen,y_qxylen
-      !real(kind=ip) ::  tanhx,tanhy,tanhz
-      !real(kind=ip) ::  sechx,sechy
-      !real(kind=ip) ::  x_vzlen,y_vzlen
-      !real(kind=ip) ::  expzcc,expzccm
+      real(kind=ip) ::  Vs,Vs_p1,Vs_m1,dws_dz
+      real(kind=ip) ::  kap
+      real(kind=ip) ::  zeta
+      real(kind=ip) ::  xcc,ycc,zcc
+      real(kind=ip) ::  x_qxylen,y_qxylen
+      real(kind=ip) ::  tanhx,tanhy,tanhz
+      real(kind=ip) ::  sechx,sechy
+      real(kind=ip) ::  x_vzlen,y_vzlen
+      real(kind=ip) ::  expzcc,expzccm
       !real(kind=ip) ::  MMS_TrueSol,MMS_Source
-      !real(kind=ip) ::  mms_src
-      !real(kind=ip) ::  init_sol
-      !real(kind=ip) ::  Dq_dt,Dq_dx,Dq_dy,Dq_dz
-      !real(kind=ip) ::  D2q_dx2,D2q_dy2,D2q_dz2
+      real(kind=ip) ::  mms_src
+      real(kind=ip) ::  init_sol
+      real(kind=ip) ::  Dq_dt,Dq_dx,Dq_dy,Dq_dz
+      real(kind=ip) ::  D2q_dx2,D2q_dy2,D2q_dz2
 
       total_mass = 0.0_ip
 
@@ -1136,45 +1139,46 @@
       endif ! TestCase.eq.5
 
 
-!      if(TestCase.eq.6)then
-!!        ! Setting up MMS
-!        if(IsLatLon)then
-!          write(outlog(io),*)"MMS not set up for Lat/Lon grids."
-!          stop 1
-!        else
-!        do n=1,nsmax
-!          do k=1,nzmax
-!            ! Fall velocity is only a function of z
-!            Vs_m1 = vf(1,1,k-1,n)
-!            Vs    = vf(1,1,k  ,n)
-!            Vs_p1 = vf(1,1,k+1,n)
-!            do j=1,nymax
-!             do i=1,nxmax
-!               ! Set up initial distribution
-!               if(itime.eq.0)then
-!                 init_sol = MMS_TrueSol(x_cc(i),y_cc(j),z_cc(k),time)
-!                 concen_pd(i,j,k,n,ts0) = init_sol
-!               endif
-!
-!            ! Get approximate z derivative of vertical velocities
-!            dws_dz = ((Vs_p1+vz(i,j,k+1))-(Vs_m1+vz(i,j,k-1)))/(2.0_ip*dz_vec(k))
-!
-!            mms_src = MMS_Source(x_cc(i),y_cc(j),z_cc(k),time, &
-!                                 vx(i,j,k),vy(i,j,k),vz(i,j,k),Vs, &
-!                                 dws_dz)
-!
-!            concen_pd(i,j,k,n,ts1) =  concen_pd(i,j,k,n,ts0) + dt*mms_src 
-!
-!              enddo ! loop over i
-!            enddo ! loop over j
-!          enddo ! loop over k
-!        enddo ! loop over n
-!         ! copy q-star slice back to q
-!        concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts0) = &
-!          concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts1)
-!
-!        endif
-!      endif
+      if(TestCase.eq.6)then
+!        ! Setting up MMS
+        if(IsLatLon)then
+          write(outlog(io),*)"MMS not set up for Lat/Lon grids."
+          stop 1
+        else
+        do n=1,nsmax
+          do k=1,nzmax
+            ! Fall velocity is only a function of z
+            Vs_m1 = vf_pd(1,1,k-1,n)
+            Vs    = vf_pd(1,1,k  ,n)
+            Vs_p1 = vf_pd(1,1,k+1,n)
+            do j=1,nymax
+             do i=1,nxmax
+               ! Set up initial distribution
+               if(time.lt.dt)then
+                 init_sol = MMS_TrueSol(x_cc_pd(i),y_cc_pd(j),z_cc_pd(k),time)
+                 concen_pd(i,j,k,n,ts0) = init_sol
+               endif
+
+            ! Get approximate z derivative of vertical velocities
+            dws_dz = ((Vs_p1+vz_pd(i,j,k+1))-&
+                      (Vs_m1+vz_pd(i,j,k-1)))/(2.0_ip*dz_vec_pd(k))
+
+            mms_src = MMS_Source(x_cc_pd(i),y_cc_pd(j),z_cc_pd(k),time, &
+                                 vx_pd(i,j,k),vy_pd(i,j,k),vz_pd(i,j,k),Vs, &
+                                 dws_dz)
+
+            concen_pd(i,j,k,n,ts1) =  concen_pd(i,j,k,n,ts0) + dt*mms_src 
+
+              enddo ! loop over i
+            enddo ! loop over j
+          enddo ! loop over k
+        enddo ! loop over n
+         ! copy q-star slice back to q
+        concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts0) = &
+          concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts1)
+
+        endif
+      endif
 
       do n=1,nsmax
         do k=1,nzmax

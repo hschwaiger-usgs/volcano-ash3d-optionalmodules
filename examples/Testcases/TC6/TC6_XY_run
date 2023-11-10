@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# We want to be able to set the number of limiters and number of dx levels globally
+# through environment levels for easy scripting.  Two limiters (None, and SuperBee) and
+# three dx levels is the default for quick execution.  These can be changed by
+# uncommenting the section below.
+#
+#  Check for limiter number passed as environment variable on command-line:
+if [ -z ${limmax+x} ]; then echo "Setting limmax to 1"; limmax=1; else echo "limmax is set to '$limmax'"; fi
+
+#  Check for idx passed as environment variable on command-line:
+if [ -z ${idx+x} ]; then echo "Setting idx to 3"; idx=3; else echo "idx is set to '$idx'"; fi
+# Approximate duration (minutes) for 7 and 2 limiters, respectively
+#  1 :     :
+#  2 :     :
+#  3 :     :
+#  4 :     :
+#  5 :     :
+
+#  Uncomment here if you want to over-ride these values
+# idx=1
+# limmax=4
+
+ASH3DROOT="../../.."
+WRKDIR="${ASH3DROOT}/src"
+ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
+TESTCASE=6
+export TESTCASE
+ASH3DCFL=0.80
+export ASH3DCFL
+
+# Subcases
+#  Only one case: Method of Manufactured Solution
+
+# Current limiter options
+#      LIM_NONE,LIM_SUPERBEE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_MC
+nlim=(LIM_NONE LIM_SUPERBEE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_MC)
+nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
+dx=(200000 100000 050000 02500 012500)
+
+limmin=0 # index of above list starting with 0
+
+echo "$idx" > TC${TESTCASE}_XY_idx.dat
+echo "$limmin $limmax" > TC${TESTCASE}_XY_lim.dat
+
+echo "*********************************************************"
+echo "Running finite-volume cases (DCU)"
+echo "*********************************************************"
+
+mkdir -p DATA PLOTS
+for (( il=$limmin;il<=$limmax;il++))
+do
+ pushd ${WRKDIR}
+ LIMITER=${nlim[il]}
+ export LIMITER
+ echo $LIMITER
+ make -f makefile_optmod clean
+ make -f makefile_optmod
+ popd
+ for (( k=0;k<idx;k++))
+  do
+  echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  echo $il ' of ' ${limmax} ' , ' $k ' of ' ${idx}
+  echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  ${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp
+  status=$?
+  if [ $status -ne 0 ]; then
+     echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
+     exit
+   else
+     mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_err.dat
+     mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_sol.dat
+     grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+  fi
+  echo "-------------------------------------------------------------------------"
+  echo "-------------------------------------------------------------------------"
+  echo "-------------------------------------------------------------------------"
+ done
+done
