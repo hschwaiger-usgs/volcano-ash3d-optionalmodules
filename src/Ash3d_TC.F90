@@ -259,6 +259,12 @@
 
       if(useTemperature)then
         call Allocate_Atmosphere_Met
+#ifdef TESTCASES
+        if(TestCase.eq.6)then
+          ! Setup up full atmosphere here
+          call Set_MMS_Atmos
+        endif
+#endif
       endif
       ! Now we can allocate the variables that live on the met grid
       if(useCalcFallVel)then
@@ -375,6 +381,9 @@
         call set_TestCase_windfield
         call Adjust_DT(.false.)
         dt = dt_TC
+        if(TestCase.eq.6)then
+          call DistSource
+        endif
 #endif
 !------------------------------------------------------------------------------
 
@@ -465,6 +474,11 @@
 !
 !------------------------------------------------------------------------------
         call Set_BC(1)
+#ifdef TESTCASES
+        if(TestCase.eq.6)then
+          call Set_MMS_BC
+        endif
+#endif
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! Advection / Diffusion / Deposition
@@ -481,6 +495,11 @@
 
         if(useDiffusion)then
           call Set_BC(2)
+#ifdef TESTCASES
+        if(TestCase.eq.6)then
+          call Set_MMS_BC
+        endif
+#endif
           call DiffuseVert
           call DiffuseHorz(itime)
         endif

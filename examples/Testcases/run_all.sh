@@ -1,6 +1,6 @@
 #!/bin/bash
 TestcasesDir=`pwd`
-il=1 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
+il=0 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
 ix=4 # 5 is the max coded but that takes overnight
 
 #il=6 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
@@ -15,8 +15,8 @@ if [[ "$rc" -gt 0 ]] ; then
 fi
 
 # Specify which cases to turn off, by setting the corresponding value to 0
-    #  1 2 3 4 5
-cases=(0 0 0 0 1)
+    #  1 2 3 4 5 6
+cases=(0 0 0 0 0 1)
 
 if [ "$[cases[0]]" -eq 1 ]; then
   cd ${TestcasesDir}/TC1
@@ -70,8 +70,8 @@ fi
 if [ "$[cases[5]]" -eq 1 ]; then
   cd ${TestcasesDir}/TC6
   limmax=$il idx=$ix time ./TC6_XY_run
-  ln -s TC6_XY_process.m TXY_process
-  ./TC6_XY_process
+  #ln -s TC6_XY_process.m TXY_process
+  #./TC6_XY_process
   cd ${TestcasesDir}
 fi
 
@@ -128,6 +128,6 @@ if [ "$[cases[5]]" -eq 1 ]; then
   echo "     Test Case 6: Method of Manufactured Solutions"
   echo "------------------------------------------------------------------------------"
   echo "        XY"
-  cat TC6/DATA/TC6_ConvRate_XY.dat
+  #cat TC6/DATA/TC6_ConvRate_XY.dat
 fi
 

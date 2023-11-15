@@ -36,7 +36,7 @@ export ASH3DCFL
 #      LIM_NONE,LIM_SUPERBEE,LIM_LAXWEN,LIM_BW,LIN_FROMM,LIM_MINMOD,LIM_MC
 nlim=(LIM_NONE LIM_SUPERBEE LIM_LAXWEN LIM_BW LIM_FROMM LIM_MINMOD LIM_MC)
 nlim_label=(LIM_NO LIM_SB LIM_LW LIM_BW LIM_FM LIM_MM LIM_MC)
-dx=(200000 100000 050000 02500 012500)
+dx=(200000 100000 050000 025000 012500)
 
 limmin=0 # index of above list starting with 0
 
@@ -69,8 +69,9 @@ do
      exit
    else
      mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_err.dat
-     mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_sol.dat
+     #mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_sol.dat
      grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+     rm -f 3d_tephra_fall.nc Ash3d.lst progress.txt
   fi
   echo "-------------------------------------------------------------------------"
   echo "-------------------------------------------------------------------------"

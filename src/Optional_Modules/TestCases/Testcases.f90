@@ -53,11 +53,12 @@
 
         ! Publicly available subroutines/functions
       public set_TestCase_globvars,set_TestCase_windfield,DistSource,&
-             Testcase_CalcErrors,MMS_Source,MMS_TrueSol
+             Testcase_CalcErrors, &
+             MMS_Source,MMS_TrueSol,Set_MMS_Atmos,Set_MMS_BC
 
         ! Publicly available variables
 
-      integer :: TestCase
+      integer,public :: TestCase
       logical :: fullASCIIOutput
       integer :: SubCase
 
@@ -70,20 +71,20 @@
       !real(kind=ip) :: MMS_suthcons  = 117.0_ip     ! Sutherland Constant (K)
       !real(kind=ip) :: MMS_suthtref  = 273.0_ip     ! Sutherland Ref
       !temperature (K)
-      !real(kind=ip) :: MMS_eta0      = 1.8325e-5_ip   ! Ref visc (Pa s)
-      !real(kind=ip) :: MMS_suthcons  = 120.0_ip     ! Sutherland Constant (K)
-      !real(kind=ip) :: MMS_suthtref  = 296.16_ip     ! Sutherland Ref temperature (K)
+      real(kind=ip) :: MMS_eta0      = 1.8325e-5_ip   ! Ref visc (Pa s)
+      real(kind=ip) :: MMS_suthcons  = 120.0_ip     ! Sutherland Constant (K)
+      real(kind=ip) :: MMS_suthtref  = 296.16_ip     ! Sutherland Ref temperature (K)
 
       real(kind=ip) :: MMS_ztrop     = 10000.0_ip   ! Height of troposphere (m)
-      !real(kind=ip) :: MMS_Ffac1     = 1.39896599613964_ip  ! WilsonHuang fac1
-      !real(kind=ip) :: MMS_Ffac2     = 0.635137780328017_ip ! WilsonHuang fac2
-      !real(kind=ip) :: MMS_Rs        = R_GAS_DRYAIR
-      !real(kind=ip) :: MMS_temper0   = 300.0_ip     ! Surf temp (K)
-      !real(kind=ip) :: MMS_pres0     = 100000.0_ip     ! Surf pres (Pa)
-      !real(kind=ip) :: MMS_skinz     = 7000.0_ip    ! pres skin depth (m)
-      !real(kind=ip) :: MMS_lpsr      = -0.007_ip    ! lapse rate (K/m)
-      !real(kind=ip) :: MMS_diam      = 0.0001_ip    ! grain size (m)
-      !real(kind=ip) :: MMS_rhom      = 2000.0_ip    ! density (kg/m3)
+      real(kind=ip) :: MMS_Ffac1     = 1.39896599613964_ip  ! WilsonHuang fac1
+      real(kind=ip) :: MMS_Ffac2     = 0.635137780328017_ip ! WilsonHuang fac2
+      real(kind=ip) :: MMS_Rs        = R_GAS_DRYAIR
+      real(kind=ip) :: MMS_temper0   = 300.0_ip     ! Surf temp (K)
+      real(kind=ip) :: MMS_pres0     = 100000.0_ip     ! Surf pres (Pa)
+      real(kind=ip) :: MMS_skinz     = 7000.0_ip    ! pres skin depth (m)
+      real(kind=ip) :: MMS_lpsr      = -0.007_ip    ! lapse rate (K/m)
+      real(kind=ip) :: MMS_diam      = 0.0001_ip    ! grain size (m)
+      real(kind=ip) :: MMS_rhom      = 2000.0_ip    ! density (kg/m3)
       real(kind=ip) :: MMS_U0        = -10.0_ip      ! ref x vel (m/s)
       real(kind=ip) :: MMS_V0        = -10.0_ip      ! ref y vel (m/s)
       real(kind=ip) :: MMS_W0        = 1.0_ip       ! ref z vel (m/s)
@@ -131,8 +132,6 @@
 
       use mesh,          only : &
         ZPADDING
-
-      implicit none
 
 #ifndef TESTCASE_1
 #ifndef TESTCASE_2
@@ -268,6 +267,101 @@
 
       end subroutine set_TestCase_globvars
 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  Set_MMS_Atmos
+!
+!  Called from: Ash3d_TC.F90
+!  Arguments:
+!    none
+!
+!  This subroutine sets the full atmospheric specification for TC 6
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      subroutine Set_MMS_Atmos
+
+      use wind_grid,     only : &
+         vf_Meso_last_step_sp,vf_Meso_next_step_sp
+
+      use Tephra,        only : &
+         n_gs_max,n_gs_aloft,&
+           vset_WH
+
+      use mesh,          only : &
+         nzmax,z_cc_pd
+
+
+      integer :: k
+      real(kind=ip) :: zcc
+      real(kind=ip) :: pres_k
+      real(kind=ip) :: temp_k
+      real(kind=ip) :: rho_air
+      real(kind=ip) :: eta
+      real(kind=ip) :: vs
+
+      do k = 1,nzmax
+        zcc = z_cc_pd(k) * 1000.0_ip
+        ! Eq 1.8 of Wallace and Hobbs
+        pres_k = MMS_pres0 * exp(-zcc/MMS_skinz)
+        temp_k = MMS_temper0 + MMS_lpsr*zcc
+
+        rho_air = pres_k/(MMS_Rs*temp_k)
+        eta     = MMS_eta0*((MMS_suthcons+MMS_suthtref)/ &
+                            (temp_k+MMS_suthcons))* &
+                            (temp_k/MMS_suthtref)**1.5_ip
+        vs = vset_WH(rho_air,MMS_rhom,eta,MMS_diam,MMS_Ffac1,MMS_Ffac2)
+        vf_Meso_last_step_sp(:,:,k,1) = real(vs,kind=sp)
+        vf_Meso_next_step_sp(:,:,k,1) = real(vs,kind=sp)
+      enddo
+
+      end subroutine Set_MMS_Atmos
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  Set_MMS_BC
+!
+!  Called from: Ash3d_TC.F90
+!  Arguments:
+!    none
+!
+!  This subroutine applies the MMS boundary conditions for TC 6
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      subroutine Set_MMS_BC
+
+      use mesh,          only : &
+         nxmax,nymax,nzmax,x_cc_pd,y_cc_pd,z_cc_pd,ts0
+
+      use solution,      only : &
+         concen_pd
+
+      use time_data,     only : &
+         time
+
+      integer :: i,j,k
+
+      do i = -1,nxmax+2
+        do j = -1,nymax+2
+          do k = -1,nzmax+2
+
+            if(i.eq.-1.or.i.eq.0.or.i.eq.nxmax+1.or.i.eq.nxmax+2 .or. &
+               j.eq.-1.or.j.eq.0.or.j.eq.nymax+1.or.j.eq.nymax+2 .or. &
+               k.eq.-1.or.k.eq.0.or.k.eq.nzmax+1.or.k.eq.nzmax+2)then
+              concen_pd(i,j,k,:,ts0) = MMS_TrueSol(x_cc_pd(i), &
+                                        y_cc_pd(j), &
+                                        z_cc_pd(k),time)
+            else
+              cycle
+            endif
+          enddo
+        enddo
+      enddo
+
+      end subroutine Set_MMS_BC
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 !  set_TestCase_windfield
@@ -301,8 +395,6 @@
 
       use time_data,     only : &
          time,dt
-
-      implicit none
 
       integer :: i,j,k
 
@@ -683,8 +775,6 @@
 
       use projection
 
-      implicit none
-
       real(kind=ip),intent(in)  :: lon_pt,lat_pt,z_pt ! coordinates of input point
       real(kind=ip),intent(in)  :: lon_pole,lat_pole  ! pole of rotation
       real(kind=ip),intent(in)  :: omega              ! rotational velocity (rev/hour)
@@ -849,8 +939,6 @@
 
       use time_data,     only : &
          time,dt
-
-      implicit none
 
       integer :: i,j,k,n
       real(kind=ip) :: r
@@ -1224,8 +1312,6 @@
       use mesh,          only : &
          nxmax,nymax,nzmax,nsmax,dz_vec_pd,kappa_pd,x_cc_pd,y_cc_pd,z_cc_pd,lat_cc_pd,&
          lon_cc_pd,ts1,IsLatLon,dx,dy
-
-      implicit none
 
       integer :: i,j,k,n
       integer :: lx,ly,lz
@@ -1956,8 +2042,6 @@
       use global_param, only : &
         HR_2_S,KM_2_M,KM3_2_M3
 
-      implicit none
-
       real(kind=ip) :: MMS_TrueSol
       real(kind=ip) :: x
       real(kind=ip) :: y
@@ -2036,8 +2120,6 @@
 
       use Diffusion,    only : &
         diffusivity_horz
-
-      implicit none
 
       real(kind=ip) :: MMS_Source
       real(kind=ip) :: x
@@ -2181,8 +2263,6 @@
 
       use global_param, only : &
         DEG2RAD
-
-      implicit none
 
       real(kind=ip),intent(in ) :: lon,lat
       real(kind=ip),intent(in ) :: lon_pole,lat_pole
