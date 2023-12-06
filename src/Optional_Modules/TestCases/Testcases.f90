@@ -290,8 +290,14 @@
            vset_WH
 
       use mesh,          only : &
-         nzmax,z_cc_pd
+         nxmax,nymax,nzmax,z_cc_pd
 
+      use solution,      only : &
+         vf_pd
+
+      use MetReader,       only : &
+         MR_dum3d_compH,MR_dum3d_metP, &
+           MR_Regrid_MetP_to_CompH
 
       integer :: k
       real(kind=ip) :: zcc
@@ -307,14 +313,21 @@
         pres_k = MMS_pres0 * exp(-zcc/MMS_skinz)
         temp_k = MMS_temper0 + MMS_lpsr*zcc
 
+        write(*,*)k,z_cc_pd(k),pres_k,temp_k
+
         rho_air = pres_k/(MMS_Rs*temp_k)
         eta     = MMS_eta0*((MMS_suthcons+MMS_suthtref)/ &
                             (temp_k+MMS_suthcons))* &
                             (temp_k/MMS_suthtref)**1.5_ip
         vs = vset_WH(rho_air,MMS_rhom,eta,MMS_diam,MMS_Ffac1,MMS_Ffac2)
-        vf_Meso_last_step_sp(:,:,k,1) = real(vs,kind=sp)
-        vf_Meso_next_step_sp(:,:,k,1) = real(vs,kind=sp)
+        !vf_Meso_last_step_sp(:,:,k,1) = real(vs,kind=sp)
+        !vf_Meso_next_step_sp(:,:,k,1) = real(vs,kind=sp)
+        !MR_dum3d_metP(:,:,:) = vf_Meso_last_step_sp(:,:,:,1)
+        !call MR_Regrid_metP_to_CompH(1)
+        !vf_pd(1:nxmax,1:nymax,1:nzmax,1) = MR_dum3d_compH(1:nxmax,1:nymax,1:nzmax)
       enddo
+
+      stop 6
 
       end subroutine Set_MMS_Atmos
 
