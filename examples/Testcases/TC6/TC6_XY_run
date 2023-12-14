@@ -57,7 +57,6 @@ do
  make -f makefile_optmod clean
  make -f makefile_optmod
  popd
- echo "$idx"
  for (( k=0;k<idx;k++))
   do
   echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -66,15 +65,15 @@ do
   echo "${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp"
   ${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp
   status=$?
-#  if [ $status -ne 0 ]; then
-#     echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
-#     exit
-#   else
-#     mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_err.dat
-#     #mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_sol.dat
-#     grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
-#     rm -f 3d_tephra_fall.nc Ash3d.lst progress.txt
-#  fi
+  if [ $status -ne 0 ]; then
+     echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
+     exit
+   else
+     mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_err.dat
+     #mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_sol.dat
+     grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+     rm -f 3d_tephra_fall.nc Ash3d.lst progress.txt
+  fi
   echo "-------------------------------------------------------------------------"
   echo "-------------------------------------------------------------------------"
   echo "-------------------------------------------------------------------------"

@@ -130,14 +130,14 @@ MFILE=makefile_optmod
 #      TESTCASE=3 : Circular advection as in Randy's book
 #      TESTCASE=4 : 1-D diffusion of half-space concentration
 #      TESTCASE=5 : Circular shear as in Randy's paper
-TESTCASE=6
+#TESTCASE=6
 #SUBCASE=1
 #
 #  SUBCASE specified whether or not to compile for a test case and which one
 #    Current available options are:
 #SUBCASE=0
 
-OPTMODS_FPP= -x f95-cpp-input -DTESTCASES
+#OPTMODS_FPP= -x f95-cpp-input -DTESTCASES
 OPTMODS_OBJ=           \
 Testcases.o
 
@@ -289,6 +289,7 @@ endif
 ifeq ($(SUBCASE), 8)
     SCFPPFLAG =-DSUBCASE_8
 endif
+OPTMODS_FPP = $(TCFPPFLAG) $(SCFPPFLAG) $(CYCFPPFLAG)
 
 PIIFPP =
 ifeq ($(PII), ON)
@@ -396,11 +397,11 @@ MesoInterpolater.o: $(ASH3dCCSRC)/MesoInterpolater.f90 $(MFILE) $(SYSINC) Ash3d_
 
 # PDE Solver (Advection, Diffusion, B.C.'s)
 AdvectionHorz.o: $(ASH3dCCSRC)/AdvectionHorz.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o AdvectionHorz_DCU.o
-	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) -c $(ASH3dCCSRC)/AdvectionHorz.f90
+	$(FC) $(FPPFLAGS) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) -c $(ASH3dCCSRC)/AdvectionHorz.f90
 AdvectionHorz_DCU.o: $(ASH3dCCSRC)/AdvectionHorz_DCU.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o
-	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) -c $(ASH3dCCSRC)/AdvectionHorz_DCU.f90
+	$(FC) $(FPPFLAGS) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) -c $(ASH3dCCSRC)/AdvectionHorz_DCU.f90
 AdvectionVert_DCU.o: $(ASH3dCCSRC)/AdvectionVert_DCU.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o
-	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) -c $(ASH3dCCSRC)/AdvectionVert_DCU.f90
+	$(FC) $(FPPFLAGS) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) -c $(ASH3dCCSRC)/AdvectionVert_DCU.f90
 Diffusion.o: $(ASH3dCCSRC)/Diffusion.F90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) -c $(ASH3dCCSRC)/Diffusion.F90
 Set_BC_TC.o: Set_BC_TC.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o Testcases.o
@@ -424,7 +425,7 @@ write_KML.o: $(ASH3dCCSRC)/write_KML.f90 $(MFILE) $(SYSINC) Ash3d_VariableModule
 
 # Optional modules
 Testcases.o: Optional_Modules/TestCases/Testcases.f90 Ash3d_VariableModules.o $(MFILE) $(SYSINC) Atmosphere.o Diffusion.o
-	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c Optional_Modules/TestCases/Testcases.f90
+	$(FC) $(FPPFLAGS) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) $(LIBS) -c Optional_Modules/TestCases/Testcases.f90
 
 
 all: Ash3d_TC

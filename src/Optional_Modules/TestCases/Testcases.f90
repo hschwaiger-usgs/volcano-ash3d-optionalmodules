@@ -327,8 +327,6 @@
         !vf_pd(1:nxmax,1:nymax,1:nzmax,1) = MR_dum3d_compH(1:nxmax,1:nymax,1:nzmax)
       enddo
 
-      stop 6
-
       end subroutine Set_MMS_Atmos
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
