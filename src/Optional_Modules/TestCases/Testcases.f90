@@ -54,7 +54,7 @@
         ! Publicly available subroutines/functions
       public set_TestCase_globvars,set_TestCase_windfield,DistSource,&
              Testcase_CalcErrors, &
-             MMS_Source,MMS_TrueSol,Set_MMS_Atmos,Set_MMS_BC
+             MMS_Source,MMS_TrueSol,MMS_Set_BC,Set_MMS_Atmos,Set_MMS_BC
 
         ! Publicly available variables
 
@@ -2034,6 +2034,9 @@
         open(200,file=ofile1,status='replace')
         write(200,*)L1_toterror,L2_toterror,MassConsError
         close(200)
+        do io=1,2;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Wrote to files TC6_err.dat"
+        endif;enddo
       endif
 
       end subroutine Testcase_CalcErrors
@@ -2113,6 +2116,47 @@
       MMS_TrueSol = MMS_TrueSol / KM3_2_M3
 
       end function MMS_TrueSol
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  MMS_Set_BC
+!
+!  Called from: Set_BC.f90 (The version that's a part of this testcase repo.)
+!  Arguments: 
+!    none
+!
+!  This subroutine applied the true solution at the boundary points.
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      subroutine MMS_Set_BC
+
+      use time_data,     only : &
+         time
+
+      use solution,      only : &
+         concen_pd
+
+      use mesh,          only : &
+         nxmax,nymax,nzmax,x_cc_pd,y_cc_pd,z_cc_pd,ts0
+
+      integer :: i,j,k
+
+      do k=-1,nzmax+2
+        do j=-1,nymax+2
+          do i=-1,nxmax+2
+            if(i.eq.-1.or.i.eq.0.or.i.eq.nxmax+1.or.i.eq.nxmax+2 .or. &
+               j.eq.-1.or.j.eq.0.or.j.eq.nymax+1.or.j.eq.nymax+2 .or. &
+               k.eq.-1.or.k.eq.0.or.k.eq.nzmax+1.or.k.eq.nzmax+2)then
+              concen_pd(i,j,k,:,ts0) = MMS_TrueSol(x_cc_pd(i),y_cc_pd(j),z_cc_pd(k),time)
+            else
+              cycle
+            endif
+          enddo
+        enddo
+      enddo
+
+      end subroutine MMS_Set_BC
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !

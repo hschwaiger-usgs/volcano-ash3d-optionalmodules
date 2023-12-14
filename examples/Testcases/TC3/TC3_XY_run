@@ -23,7 +23,7 @@ if [ -z ${idx+x} ]; then echo "Setting idx to 3"; idx=3; else echo "idx is set t
 
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
-ASH3D="${ASH3DROOT}/bin/Ash3d_TC"
+ASH3D="${ASH3DROOT}/bin/Ash3d"
 TESTCASE=3
 export TESTCASE
 ASH3DCFL=0.80
