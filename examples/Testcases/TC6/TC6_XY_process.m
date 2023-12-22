@@ -12,14 +12,13 @@ limmax=datlim(2)+1;
 
 % Set this to 1 if you want plots of the solution and errors.
 % Set to 0 if you only want convergence plots and time plots.
-cplotsol  = 1; % Plot solution (row=true, calc, err, col=dx)
 cploterr1 = 1; % Plot L1 error
 cploterr2 = 0; % Plot L2 error
 cplotmass = 1; % Plot Mass Consv error
 
-resdx = [0.025000 0.012500 0.006250 0.003125 0.0015625];
-resnx = [40 80 160 320 640];
-resny = [40 80 160 320 640];
+resdx = [20.00 10.00 5.00 2.50 1.25];
+resnx = [10 20 40 80 160];
+resny = [10 20 40 80 160];
 
 nlim = limmax-limmin+1;
 nlim_label = char('LIM_NO','LIM_SB','LIM_LW','LIM_BW','LIM_FM','LIM_MM','LIM_MC');
@@ -67,7 +66,7 @@ for iplot = 1:3
       plotvar = GlobL1Errors;
       title_str = 'L_1 Error';
       out_file = 'PLOTS/TC5_XY_Solution_Error_L1.png';
-      paxis = [1.0e-3 1.0e-1 1.0e-3 1.0e-1];
+      paxis = [1.0e0 1.0e2 1.0e-5 1.0e0];
     elseif iplot==2
       plotvar = GlobL2Errors;
       title_str = 'L_2 Error';
@@ -77,16 +76,16 @@ for iplot = 1:3
       plotvar = GlobMCErrors;
       title_str = 'Mass Cons. Ratio';
       out_file = 'PLOTS/TC5_XY_Solution_Error_MassCons.png';
-      paxis = [1.0e-3 1.0e-1 1.0e-7 1.0e-1];
+      paxis = [1.0e0 1.0e2 1.0e-16 1.0e0];
     end
     figure;
     subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,1,1),'-+r')
     hold on;
     if nlim > 1
-      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,2,1),'-+g')
+      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,2,1),'-og')
     end
     if nlim > 2
-      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,3,1),'-+b')
+      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,3,1),'-^b')
     end
     if nlim > 3
       subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,4,1),'-+k')
@@ -95,18 +94,18 @@ for iplot = 1:3
       subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,5,1),'-+y')
     end
     if nlim > 5
-      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,6,1),'-+m')
+      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,6,1),'-om')
     end
     if nlim > 6
-      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-+c')
+      subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-^c')
     end
 
-    subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-3],'k-')
-    subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-5],'k-')
+    subplot(1,2,2),loglog([1.0e2,1.0e0],[1.0e0,1.0e-2],'k-')
+    subplot(1,2,2),loglog([1.0e2,1.0e0],[1.0e0,1.0e-4],'k-')
     grid off;
     xlabel('dx');
     title(title_str);
-    %axis(paxis);
+    axis(paxis);
     %axis square;
     %axis equal;
     hold off;
@@ -115,10 +114,10 @@ for iplot = 1:3
     subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,1,1),'-+r')
     hold on;
     if nlim > 1
-      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,2,1),'-+g')
+      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,2,1),'-og')
     end
     if nlim > 2
-      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,3,1),'-+b')
+      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,3,1),'-^b')
     end
     if nlim > 3
       subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,4,1),'-+k')
@@ -127,10 +126,10 @@ for iplot = 1:3
       subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,5,1),'-+y')
     end
     if nlim > 5
-      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,6,1),'-+m')
+      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,6,1),'-om')
     end
     if nlim > 6
-      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-+c')
+      subplot(3,4,5),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-^c')
     end
     subplot(3,4,5),loglog([1.0e-1,1.0e-2],[1.0e-2,1.0e-3],'k--')
     subplot(3,4,5),loglog([1.0e-1,1.0e-2],[1.0e-2,1.0e-4],'k:')

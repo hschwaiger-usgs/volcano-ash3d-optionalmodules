@@ -1,7 +1,7 @@
 #!/bin/bash
 TestcasesDir=`pwd`
-il=0 # 0-6: 0 is just no-limiter, 1 is NO and Superbee, 6 is all
-ix=3 # 1-5: 5 is the max coded but that takes overnight
+il=6 # 0-6: 0 is just no-limiter, 1 is NO and Superbee, 6 is all
+ix=1 # 1-5: 5 is the max coded but that takes overnight
 
 #il=6 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
 #ix=5 # 5 is the max coded but that takes overnight

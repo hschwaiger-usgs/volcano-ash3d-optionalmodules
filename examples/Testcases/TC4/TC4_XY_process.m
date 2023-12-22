@@ -108,28 +108,44 @@ save ("-ascii","DATA/TC4_ConvRate_XY.dat","ConvRate")
  dxmin=1.0e-3;
  dxmax=1.0e-1;
  L1min=1.0e-6;
- L1max=1.0e-2;
+ L1max=1.0e0;
  L2min=1.0e-6;
  L2max=1.0e-2;
  Ermin=1.0e-16;
  Ermax=1.0e-0;
 
 
- subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--');hold on;
- subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
- subplot(2,3,1),loglog(resdx(1:nresmax)',GlobL1Errors1(1:nsub,1:nresmax)');axis([dxmin dxmax L1min L1max]);hold off;
+ %subplot(1,2,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--');hold on;
+ %subplot(1,2,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
+ %subplot(1,2,1),loglog(resdx(1:nresmax)',GlobL1Errors1(1:nsub,1:nresmax)');axis([dxmin dxmax L1min L1max]);hold off;
+ subplot(1,2,1),loglog(resdx(1:nresmax)',GlobL1Errors1(1,1:nresmax),'-+r');hold on;
+ subplot(1,2,1),loglog(resdx(1:nresmax)',GlobL1Errors1(2,1:nresmax),'-og')
+ subplot(1,2,1),loglog(resdx(1:nresmax)',GlobL1Errors1(3,1:nresmax),'-^b')
+ subplot(1,2,1),loglog(resdx(1:nresmax)',GlobL1Errors1(4,1:nresmax),'-+k')
+ subplot(1,2,1),loglog(resdx(1:nresmax)',GlobL1Errors1(5,1:nresmax),'-om')
+ subplot(1,2,1),loglog(resdx(1:nresmax)',GlobL1Errors1(6,1:nresmax),'-^c')
+ subplot(1,2,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--')
+ subplot(1,2,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
+ axis([dxmin dxmax L1min L1max])
+ hold off;
  ylabel('L1 Error')
  xlabel('dx')
  %legend('O1','O2','Exp-x','Exp-y','Exp-z','Impl-x','Impl-y','Impl-z',"location",'southeast');
- subplot(2,3,2),loglog(resdx(1:nresmax)',GlobL2Errors1(1:nsub,1:nresmax)');axis([dxmin dxmax L2min L2max]);
- ylabel('L2 Error')
- xlabel('dx')
- subplot(2,3,3),loglog(resdx(1:nresmax)',GlobMCErrors1(1:nsub,1:nresmax)');axis([dxmin dxmax Ermin Ermax]);
+
+
+ %subplot(1,2,2),loglog(resdx(1:nresmax)',GlobMCErrors1(1:nsub,1:nresmax)');axis([dxmin dxmax Ermin Ermax]);
+ subplot(1,2,2),loglog(resdx(1:nresmax)',GlobMCErrors1(1,1:nresmax),'-+r');hold on;
+ subplot(1,2,2),loglog(resdx(1:nresmax)',GlobMCErrors1(2,1:nresmax),'-og')
+ subplot(1,2,2),loglog(resdx(1:nresmax)',GlobMCErrors1(3,1:nresmax),'-^b')
+ subplot(1,2,2),loglog(resdx(1:nresmax)',GlobMCErrors1(4,1:nresmax),'-+k')
+ subplot(1,2,2),loglog(resdx(1:nresmax)',GlobMCErrors1(5,1:nresmax),'-om')
+ subplot(1,2,2),loglog(resdx(1:nresmax)',GlobMCErrors1(6,1:nresmax),'-^c')
+ axis([dxmin dxmax Ermin Ermax])
  ylabel('MC Error')
  xlabel('dx')
 
- subplot(2,3,4),loglog(resdx(1:nresmax)',GlobL1Errors1(1:nsub,1:nresmax)');axis([dxmin dxmax L1min L1max]);hold off;
- legend('Exp-x','Exp-y','Exp-z','Impl-x','Impl-y','Impl-z',"location",'southeast');
+ %subplot(2,3,4),loglog(resdx(1:nresmax)',GlobL1Errors1(1:nsub,1:nresmax)');axis([dxmin dxmax L1min L1max]);hold off;
+ legend('Exp-x','Exp-y','Exp-z','Impl-x','Impl-y','Impl-z',"location",'northeast');
 
  imgfile = sprintf('PLOTS/TC4_XY.png');
  print (hf, imgfile, "-dpng");

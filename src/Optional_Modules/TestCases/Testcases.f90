@@ -87,7 +87,7 @@
       real(kind=ip) :: MMS_rhom      = 2000.0_ip    ! density (kg/m3)
       real(kind=ip) :: MMS_U0        = -10.0_ip      ! ref x vel (m/s)
       real(kind=ip) :: MMS_V0        = -10.0_ip      ! ref y vel (m/s)
-      real(kind=ip) :: MMS_W0        = 1.0_ip       ! ref z vel (m/s)
+      real(kind=ip) :: MMS_W0        = 0.0_ip       ! ref z vel (m/s)
       real(kind=ip) :: MMS_Q0        = 1.0e10_ip    ! ref concen (kg/m3)
       real(kind=ip) :: MMS_zeta0     = 200000.0_ip    ! ref zeta (m)
       real(kind=ip) :: MMS_qxylen    = 200000.0_ip     ! horiz length of solution (m)
@@ -95,9 +95,9 @@
 
       logical :: MMS_USE_X    = .true.
       logical :: MMS_USE_Y    = .true.
-      logical :: MMS_USE_Z    = .true.
-      logical :: MMS_USE_T    = .true.
-      logical :: MMS_USE_DifF = .true.
+      logical :: MMS_USE_Z    = .false.
+      logical :: MMS_USE_T    = .false.
+      logical :: MMS_USE_DIFF = .false.
 
       !real(kind=ip) :: MMS_U0        = 0.0_ip      ! ref x vel (m/s)
       !real(kind=ip) :: MMS_V0        = 0.0_ip      ! ref y vel (m/s)
@@ -978,8 +978,6 @@
       real(kind=ip) ::  Dq_dt,Dq_dx,Dq_dy,Dq_dz
       real(kind=ip) ::  D2q_dx2,D2q_dy2,D2q_dz2
 
-      total_mass = 0.0_ip
-
       if(TestCase.eq.1)then
         if(IsLatLon)then
           ! Setting up concentration for 2D pulse to be advected
@@ -1255,6 +1253,9 @@
                ! Set up initial distribution
                if(time.lt.dt)then
                  init_sol = MMS_TrueSol(x_cc_pd(i),y_cc_pd(j),z_cc_pd(k),time)
+                 !do io=1,2;if(VB(io).le.verbosity_info)then
+                 !  write(outlog(io),*)i,j,k,n,init_sol
+                 !endif;enddo
                  concen_pd(i,j,k,n,ts0) = init_sol
                endif
 
@@ -1276,9 +1277,11 @@
         concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts0) = &
           concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts1)
 
+        !stop 0
         endif
       endif
 
+      total_mass = 0.0_ip
       do n=1,nsmax
         do k=1,nzmax
           do j=1,nymax
@@ -1290,7 +1293,7 @@
       enddo ! loop over n
 
       do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),*)"Total mass = ",total_mass
+        write(outlog(io),*)"Total mass inserted = ",total_mass,dt
       endif;enddo
 
       end subroutine DistSource
@@ -2275,7 +2278,7 @@
       if(.not.MMS_USE_Z)Dq_dz = 0.0_ip
       if(.not.MMS_USE_Z)Dq_dt = 0.0_ip
       if(.not.MMS_USE_T)Dq_dt = 0.0_ip
-      !if(.not.MMS_USE_DifF)then
+      !if(.not.MMS_USE_DIFF)then
       !  D2q_dx2 = 0.0_ip
       !  D2q_dy2 = 0.0_ip
       !  D2q_dz2 = 0.0_ip

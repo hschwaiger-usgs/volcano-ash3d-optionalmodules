@@ -431,7 +431,7 @@ Testcases.o: Optional_Modules/TestCases/Testcases.f90 Ash3d_VariableModules.o $(
 all: Ash3d_TC
 
 clean:
-	rm -rf $(OBJECTS) Ash3d_TC.o $(DATAOBJ) $(OPTMODS_OBJ) ../bin/Ash3d* \
+	rm -rf $(OBJECTS) Ash3d_TC.o $(DATAOBJ) $(OPTMODS_OBJ) ../bin/Ash3d ../bin/Ash3d_TC* \
         *.mod *__genmod.f90
 
 install:

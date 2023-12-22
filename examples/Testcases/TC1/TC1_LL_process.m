@@ -74,42 +74,124 @@ for subcase = submin:submax
  clf;
  %Specify point of O(1) and O(2) intersection
  Ox=1.0e1;
- Oy=1.0e-4;
+ Oy=1.0e-3;
  dxmin=1.0e-1;
  dxmax=1.0e1;
  L1min=1.0e-8;
- L1max=1.0e-4;
- L2min=1.0e-11;
- L2max=1.0e-7;
+ L1max=1.0e-2;
  Ermin=1.0e-16;
- Ermax=1.0e-13;
+ Ermax=1.0e-5;
  
- % Interior
- subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--');hold on;
- subplot(2,3,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
- subplot(2,3,1),loglog(resdx(1:nresmax),GlobL1Errors1(subcase,1:nresmax,:));axis([dxmin dxmax L1min L1max]);hold off;
+ % Interior L1
+ subplot(2,2,1),loglog(resdx(1:nresmax),GlobL1Errors1(subcase,1:nresmax,1),'-+r')
+ hold on;
+ if nlim > 1
+   subplot(2,2,1),loglog(resdx(1:nresmax),GlobL1Errors1(subcase,1:nresmax,2),'-+g')
+ end
+ if nlim > 2
+   subplot(2,2,1),loglog(resdx(1:nresmax),GlobL1Errors1(subcase,1:nresmax,3),'-+b')
+ end
+ if nlim > 3
+   subplot(2,2,1),loglog(resdx(1:nresmax),GlobL1Errors1(subcase,1:nresmax,4),'-+k')
+ end
+ if nlim > 4
+   subplot(2,2,1),loglog(resdx(1:nresmax),GlobL1Errors1(subcase,1:nresmax,5),'-+y')
+ end
+ if nlim > 5
+   subplot(2,2,1),loglog(resdx(1:nresmax),GlobL1Errors1(subcase,1:nresmax,6),'-+m')
+ end
+ if nlim > 6
+   subplot(2,2,1),loglog(resdx(1:nresmax),GlobL1Errors1(subcase,1:nresmax,7),'-+c')
+ end
+ subplot(2,2,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--')
+ subplot(2,2,1),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
+ grid off;
+ axis([dxmin dxmax L1min L1max])
  ylabel('L_1 Error')
  xlabel('dx')
- %legend('O(1)','O(2)','None','Superbee','Lax-Wen','BeamWarm','Fromm','MinMod','MC','Location','northwest');
- subplot(2,3,2),loglog(resdx(1:nresmax),GlobL2Errors1(subcase,1:nresmax,:));axis([dxmin dxmax L2min L2max]);
- ylabel('L_2 Error')
- xlabel('dx')
- subplot(2,3,3),loglog(resdx(1:nresmax),GlobMCErrors1(subcase,1:nresmax,:));axis([dxmin dxmax Ermin Ermax]);
+ hold off;
+
+ % Interior MC Error
+ subplot(2,2,2),loglog(resdx(1:nresmax),GlobMCErrors1(subcase,1:nresmax,1),'-+r')
+ hold on;
+ if nlim > 1
+   subplot(2,2,2),loglog(resdx(1:nresmax),GlobMCErrors1(subcase,1:nresmax,2),'-+g')
+ end
+ if nlim > 2
+   subplot(2,2,2),loglog(resdx(1:nresmax),GlobMCErrors1(subcase,1:nresmax,3),'-+b')
+ end
+ if nlim > 3
+   subplot(2,2,2),loglog(resdx(1:nresmax),GlobMCErrors1(subcase,1:nresmax,4),'-+k')
+ end
+ if nlim > 4
+   subplot(2,2,2),loglog(resdx(1:nresmax),GlobMCErrors1(subcase,1:nresmax,5),'-+y')
+ end
+ if nlim > 5
+   subplot(2,2,2),loglog(resdx(1:nresmax),GlobMCErrors1(subcase,1:nresmax,6),'-+m')
+ end
+ if nlim > 6
+   subplot(2,2,2),loglog(resdx(1:nresmax),GlobMCErrors1(subcase,1:nresmax,7),'-+c')
+ end
+ axis([dxmin dxmax Ermin Ermax])
  ylabel('MC Error')
  xlabel('dx')
- 
- % Boundary
- subplot(2,3,4),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--');hold on;
- subplot(2,3,4),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
- subplot(2,3,4),loglog(resdx(1:nresmax),GlobL1Errors2(subcase,1:nresmax,:));axis([dxmin dxmax L1min L1max]);hold off;
+ legend('None','Superbee','Lax-Wen','BeamWarm','Fromm','MinMod','MC','Location','northeast');
+ hold off;
+
+ % Boundary L1
+ subplot(2,2,3),loglog(resdx(1:nresmax),GlobL1Errors2(subcase,1:nresmax,1),'-+r')
+ hold on;
+ if nlim > 1
+   subplot(2,2,3),loglog(resdx(1:nresmax),GlobL1Errors2(subcase,1:nresmax,2),'-+g')
+ end
+ if nlim > 2
+   subplot(2,2,3),loglog(resdx(1:nresmax),GlobL1Errors2(subcase,1:nresmax,3),'-+b')
+ end
+ if nlim > 3
+   subplot(2,2,3),loglog(resdx(1:nresmax),GlobL1Errors2(subcase,1:nresmax,4),'-+k')
+ end
+ if nlim > 4
+   subplot(2,2,3),loglog(resdx(1:nresmax),GlobL1Errors2(subcase,1:nresmax,5),'-+y')
+ end
+ if nlim > 5
+   subplot(2,2,3),loglog(resdx(1:nresmax),GlobL1Errors2(subcase,1:nresmax,6),'-+m')
+ end
+ if nlim > 6
+   subplot(2,2,3),loglog(resdx(1:nresmax),GlobL1Errors2(subcase,1:nresmax,7),'-+c')
+ end
+ subplot(2,2,3),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-2],'k--')
+ subplot(2,2,3),loglog([Ox,Ox*1.0e-2],[Oy,Oy*1.0e-4],'k:')
+ grid off;
+ axis([dxmin dxmax L1min L1max])
  ylabel('L_1 Error')
  xlabel('dx')
- subplot(2,3,5),loglog(resdx(1:nresmax),GlobL2Errors2(subcase,1:nresmax,:));axis([dxmin dxmax L2min L2max]);
- ylabel('L_2 Error')
- xlabel('dx')
- subplot(2,3,6),loglog(resdx(1:nresmax),GlobMCErrors2(subcase,1:nresmax,:));axis([dxmin dxmax Ermin Ermax]);
+ hold off;
+
+ % Boundary MC Error
+ subplot(2,2,4),loglog(resdx(1:nresmax),GlobMCErrors2(subcase,1:nresmax,1),'-+r')
+ hold on;
+ if nlim > 1
+   subplot(2,2,4),loglog(resdx(1:nresmax),GlobMCErrors2(subcase,1:nresmax,2),'-+g')
+ end
+ if nlim > 2
+   subplot(2,2,4),loglog(resdx(1:nresmax),GlobMCErrors2(subcase,1:nresmax,3),'-+b')
+ end
+ if nlim > 3
+   subplot(2,2,4),loglog(resdx(1:nresmax),GlobMCErrors2(subcase,1:nresmax,4),'-+k')
+ end
+ if nlim > 4
+   subplot(2,2,4),loglog(resdx(1:nresmax),GlobMCErrors2(subcase,1:nresmax,5),'-+y')
+ end
+ if nlim > 5
+   subplot(2,2,4),loglog(resdx(1:nresmax),GlobMCErrors2(subcase,1:nresmax,6),'-+m')
+ end
+ if nlim > 6
+   subplot(2,2,4),loglog(resdx(1:nresmax),GlobMCErrors2(subcase,1:nresmax,7),'-+c')
+ end
+ axis([dxmin dxmax Ermin Ermax])
  ylabel('MC Error')
  xlabel('dx')
+ hold off;
  
  imgfile = sprintf('PLOTS/TC1_LL_Sub%i.png',subcase);
  print (hf, imgfile, "-dpng");

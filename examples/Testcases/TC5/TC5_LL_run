@@ -70,7 +70,8 @@ do
    else
      mv TC${TESTCASE}_LL_err.dat DATA/TC${TESTCASE}_LL_${nlim_label[il]}_${dx[k]}_err.dat
      mv TC${TESTCASE}_LL_sol.dat DATA/TC${TESTCASE}_LL_${nlim_label[il]}_${dx[k]}_sol.dat
-     grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_LL_${nlim_label[il]}_etime.dat
+     grep solver Ash3d.lst cut -c 35-48 >> DATA/TC${TESTCASE}_LL_${nlim_label[il]}_etime.dat
+     rm -f 3d_tephra_fall.nc Ash3d.lst progress.txt
   fi
   echo "-------------------------------------------------------------------------"
   echo "-------------------------------------------------------------------------"

@@ -154,8 +154,8 @@ for iplot = 1:3
       subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,7,1),'-+c')
     end
 
-    subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-3],'k-')
-    subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-5],'k-')
+    subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-3],'k--')
+    subplot(1,2,2),loglog([1.0e-1,1.0e-3],[1.0e-1,1.0e-5],'k:')
     grid off;
     xlabel('dx');
     title(title_str);

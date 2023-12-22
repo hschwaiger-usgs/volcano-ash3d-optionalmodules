@@ -89,7 +89,7 @@ do
       mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
       mv TC${TESTCASE}_Sub${SUBCASE}_St1_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_sol.dat
       mv TC${TESTCASE}_Sub${SUBCASE}_St2_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_sol.dat
-      grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_etime.dat
+     grep solver Ash3d.lst cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
       rm 3d_tephra_fall*dat
    fi
    echo "-------------------------------------------------------------------------"

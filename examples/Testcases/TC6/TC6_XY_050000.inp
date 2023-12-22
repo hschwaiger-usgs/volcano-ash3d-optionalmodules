@@ -64,7 +64,7 @@ yes                          # Have Proj4 calculate projected coordinates?
 #GRAIN SIZE GROUPS
 *******************************************************************************
 1                            # Number of settling velocity groups
-0.10   1.0 2000.0            # setting velocity (m/s), mass fraction having that settling velocity
+0.01   1.0 2000.0            # setting velocity (m/s), mass fraction having that settling velocity
 *******************************************************************************
 #Options for writing vertical profiles
 *******************************************************************************

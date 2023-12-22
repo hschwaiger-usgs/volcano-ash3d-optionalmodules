@@ -268,6 +268,11 @@
         if(TestCase.eq.6)then
           ! Setup up full atmosphere here
           call Set_MMS_Atmos
+          CheckConditions(1) = .false. ! less than 1% of ash aloft
+          CheckConditions(2) = .true.  ! time.ge.Simtime_in_hours
+          CheckConditions(3) = .false. ! n_gs_aloft.eq.0
+          CheckConditions(4) = .false. ! MassConsErr.gt.1.0e-3_ip
+          CheckConditions(5) = .false. ! if any volume measure is negative
         endif
 #endif
       endif

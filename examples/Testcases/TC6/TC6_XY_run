@@ -57,6 +57,7 @@ do
  make -f makefile_optmod clean
  make -f makefile_optmod
  popd
+ cp ${ASH3D} ${ASH3D}_${nlim_label[il]}
  for (( k=0;k<idx;k++))
   do
   echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -70,8 +71,10 @@ do
      exit
    else
      mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_err.dat
-     #mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_sol.dat
-     grep Execution Ash3d.lst | grep -v CPU | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+     if [ $k -eq 0 ]; then
+       rm DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+     fi
+     grep solver Ash3d.lst | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
      rm -f 3d_tephra_fall.nc Ash3d.lst progress.txt
   fi
   echo "-------------------------------------------------------------------------"
