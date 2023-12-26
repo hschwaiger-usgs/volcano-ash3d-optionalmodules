@@ -95,9 +95,9 @@
 
       logical :: MMS_USE_X    = .true.
       logical :: MMS_USE_Y    = .true.
-      logical :: MMS_USE_Z    = .false.
-      logical :: MMS_USE_T    = .false.
-      logical :: MMS_USE_DIFF = .false.
+      logical :: MMS_USE_Z    = .true.
+      logical :: MMS_USE_T    = .true.
+      logical :: MMS_USE_DIFF = .true.
 
       !real(kind=ip) :: MMS_U0        = 0.0_ip      ! ref x vel (m/s)
       !real(kind=ip) :: MMS_V0        = 0.0_ip      ! ref y vel (m/s)
@@ -738,7 +738,7 @@
           do k=-1,nzmax+2
             zcc = z_cc_pd(k) * KM_2_M
             if(MMS_USE_Y)then
-              vy_pd(:,:,k) = MMS_V0 * 0.5_ip * (1.0_ip + tanh(zcc-MMS_ztrop))
+              vy_pd(:,:,k) = MMS_V0 * MPS_2_KMPHR * 0.5_ip * (1.0_ip + tanh(zcc-MMS_ztrop))
             else
               vy_pd = 0.0_ip
             endif
@@ -749,7 +749,7 @@
               ycc = y_cc_pd(j) * KM_2_M
               ! z-velocity in m/s
               if(MMS_USE_Z)then
-                vz_pd(i,j,:) = -MMS_W0*cos(xcc*PI/MMS_qxylen)*cos(ycc*PI/MMS_qxylen)
+                vz_pd(i,j,:) = -MMS_W0*MPS_2_KMPHR*cos(xcc*PI/MMS_qxylen)*cos(ycc*PI/MMS_qxylen)
               else
                 vz_pd = 0.0_ip
               endif
@@ -1293,7 +1293,7 @@
       enddo ! loop over n
 
       do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),*)"Total mass inserted = ",total_mass,dt
+        write(outlog(io),*)"Total mass = ",total_mass,dt
       endif;enddo
 
       end subroutine DistSource
