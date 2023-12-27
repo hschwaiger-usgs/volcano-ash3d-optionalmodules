@@ -972,7 +972,6 @@
       real(kind=ip) ::  sechx,sechy
       real(kind=ip) ::  x_vzlen,y_vzlen
       real(kind=ip) ::  expzcc,expzccm
-      !real(kind=ip) ::  MMS_TrueSol,MMS_Source
       real(kind=ip) ::  mms_src
       real(kind=ip) ::  init_sol
       real(kind=ip) ::  Dq_dt,Dq_dx,Dq_dy,Dq_dz
@@ -1277,7 +1276,6 @@
         concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts0) = &
           concen_pd(1:nxmax,1:nymax,1:nzmax,:,ts1)
 
-        !stop 0
         endif
       endif
 
@@ -2299,6 +2297,12 @@
 
            ! Convert from kg/m3/s to kg/km3/hr
       MMS_Source = MMS_Source * HR_2_S / KM3_2_M3
+
+      if(MMS_Source.gt.100.0)then
+        write(*,*)"ERROR!!!!"
+        write(*,*)x,y,z,t,velx,vely,velz,vels,dws_dz,MMS_Source
+        stop 0
+      endif
 
       end function MMS_Source
 

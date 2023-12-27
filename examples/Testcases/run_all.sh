@@ -1,7 +1,7 @@
 #!/bin/bash
 TestcasesDir=`pwd`
 il=6 # 0-6: 0 is just no-limiter, 1 is NO and Superbee, 6 is all
-ix=1 # 1-5: 5 is the max coded but that takes overnight
+ix=5 # 1-5: 5 is the max coded but that takes overnight
 
 #il=6 # 0 is just no-limiter, 1 in NO and Superbee, 6 is all
 #ix=5 # 5 is the max coded but that takes overnight
@@ -70,8 +70,8 @@ fi
 if [ "$[cases[5]]" -eq 1 ]; then
   cd ${TestcasesDir}/TC6
   limmax=$il idx=$ix time ./TC6_XY_run
-  #ln -s TC6_XY_process.m TXY_process
-  #./TC6_XY_process
+  ln -s TC6_XY_process.m TXY_process
+  ./TC6_XY_process
   cd ${TestcasesDir}
 fi
 

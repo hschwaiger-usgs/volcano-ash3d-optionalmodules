@@ -66,7 +66,7 @@ for iplot = 1:3
       plotvar = GlobL1Errors;
       title_str = 'L_1 Error';
       out_file = 'PLOTS/TC5_XY_Solution_Error_L1.png';
-      paxis = [1.0e0 1.0e2 1.0e-5 1.0e1];
+      paxis = [1.0e0 1.0e2 1.0e-5 1.0e0];
     elseif iplot==2
       plotvar = GlobL2Errors;
       title_str = 'L_2 Error';
@@ -76,7 +76,7 @@ for iplot = 1:3
       plotvar = GlobMCErrors;
       title_str = 'Mass Cons. Ratio';
       out_file = 'PLOTS/TC5_XY_Solution_Error_MassCons.png';
-      paxis = [1.0e0 1.0e2 1.0e-16 1.0e1];
+      paxis = [1.0e0 1.0e2 1.0e-16 1.0e0];
     end
     figure;
     subplot(1,2,2),loglog(resdx(1:nresmax),plotvar(1:nresmax,1,1),'-+r')
