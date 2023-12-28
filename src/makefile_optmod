@@ -46,7 +46,7 @@ SYSINC = make_gfortran.inc
 #      OMPOPT   : includes optimizations flags for fastest runtime and OpenMP directives
 #                 To run, enter: env OMP_NUM_THREADS=4 Ash3d input_file.inp
 #    This variable cannot be left blank
-RUN = DEBUG
+#RUN = DEBUG
 #RUN = DEBUGOMP
 #RUN = PROF
 RUN = OPT
@@ -118,18 +118,34 @@ MFILE=makefile_optmod
 #    Current available options are:
 #      
 #      TESTCASE=1 : 2-D concentration pulse with constant windfield (advect in x or y)
+#                   All cases in both XY and LL
 #        SUBCASE=1 : x+,y0
-#        SUBCASE=5 : x+,y+
 #        SUBCASE=2 : x-,y0
 #        SUBCASE=3 : x0,y+
 #        SUBCASE=4 : x0,y-
 #        SUBCASE=5 : x+,y+
+#        SUBCASE=6 : x-,y-
 #        SUBCASE=7 : x-,y+
 #        SUBCASE=8 : x+,y-
 #      TESTCASE=2 : 1-D concentration pulse at xy point (advect in z)
-#      TESTCASE=3 : Circular advection as in Randy's book
-#      TESTCASE=4 : 1-D diffusion of half-space concentration
-#      TESTCASE=5 : Circular shear as in Randy's paper
+#                   All cases in XY only
+#        SUBCASE=1 : z+,vf=0
+#        SUBCASE=2 : z-,vf=0
+#        SUBCASE=3 : z=0,vf+
+#        SUBCASE=4 : z=0,vf-
+#      TESTCASE=3 : Circular advection as in LeVeque's Finite Volume book (p.460 Ex 20.1)
+#                   No subcases, but testcase is run in both XY and LL
+#      TESTCASE=4 : 1-D transient diffusion of half-space concentration
+#                   All cases in XY only
+#        SUBCASE=1 : Explicit Diffusion in x
+#        SUBCASE=2 : Explicit Diffusion in y
+#        SUBCASE=3 : Explicit Diffusion in z
+#        SUBCASE=4 : Crank-Nicolson in x
+#        SUBCASE=5 : Crank-Nicolson in y
+#        SUBCASE=6 : Crank-Nicolson in z
+#      TESTCASE=5 : Circular shear as Example 5.4.4 of Durran's Finite Volume book (p.284)
+#                   No subcases, but testcase is run in both XY and LL
+#      TESTCASE=6 : Method of Manufactured Solutions
 #TESTCASE=6
 #SUBCASE=1
 #

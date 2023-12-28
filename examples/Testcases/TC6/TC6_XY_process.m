@@ -141,4 +141,4 @@ for iplot = 1:3
     print(out_file,'-color','-dpng');
   end
 end
-
+save ("-ascii","DATA/TC6_ConvRate_XY.dat","ConvRate")

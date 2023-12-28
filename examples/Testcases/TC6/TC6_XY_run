@@ -28,7 +28,7 @@ TESTCASE=6
 export TESTCASE
 ASH3DCFL=0.80
 export ASH3DCFL
-
+GRID=XY
 # Subcases
 #  Only one case: Method of Manufactured Solution
 
@@ -40,8 +40,8 @@ dx=(200000 100000 050000 025000 012500)
 
 limmin=0 # index of above list starting with 0
 
-echo "$idx" > TC${TESTCASE}_XY_idx.dat
-echo "$limmin $limmax" > TC${TESTCASE}_XY_lim.dat
+echo "$idx" > TC${TESTCASE}_${GRID}_idx.dat
+echo "$limmin $limmax" > TC${TESTCASE}_${GRID}_lim.dat
 
 echo "*********************************************************"
 echo "Running finite-volume cases (DCU)"
@@ -51,30 +51,34 @@ mkdir -p DATA PLOTS
 for (( il=$limmin;il<=$limmax;il++))
 do
  pushd ${WRKDIR}
+ SUBCASE=0
+ export SUBCASE
  LIMITER=${nlim[il]}
  export LIMITER
- echo $LIMITER
+ echo $SUBCASE $LIMITER
+
  make -f makefile_optmod clean
  make -f makefile_optmod
  popd
- cp ${ASH3D} ${ASH3D}_${nlim_label[il]}
+ cp ${ASH3D} ${ASH3D}_TC${TESTCASE}${SUBCASE}_${nlim_label[il]}
  for (( k=0;k<idx;k++))
   do
   echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
   echo $il ' of ' ${limmax} ' , ' $k ' of ' ${idx}
   echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  echo "${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp"
-  ${ASH3D} TC${TESTCASE}_XY_${dx[k]}.inp
+  echo "${ASH3D} TC${TESTCASE}_${GRID}_${dx[k]}.inp"
+   ${ASH3D} TC${TESTCASE}_${GRID}_${dx[k]}.inp
   status=$?
   if [ $status -ne 0 ]; then
      echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
      exit
    else
-     mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_${nlim_label[il]}_${dx[k]}_err.dat
+   echo "Backing up output files"
+     mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_${dx[k]}_err.dat
      if [ $k -eq 0 ]; then
-       rm DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+       rm -f DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_etime.dat
      fi
-     grep solver Ash3d.lst | cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+     grep solver Ash3d.lst | cut -c 35-48 >> DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_etime.dat
      rm -f 3d_tephra_fall.nc Ash3d.lst progress.txt
   fi
   echo "-------------------------------------------------------------------------"

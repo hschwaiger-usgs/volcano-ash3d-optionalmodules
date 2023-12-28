@@ -28,7 +28,7 @@ TESTCASE=2
 export TESTCASE
 ASH3DCFL=0.80
 export ASH3DCFL
-
+GRID=XY
 # Subcases
 sub=(0 1 2 3 4)
 # Vertical advection:
@@ -47,9 +47,9 @@ limmin=0 # index of above list starting with 0
 submin=1
 submax=4
 
-echo "$idx" > TC${TESTCASE}_XY_idx.dat
-echo "$limmin $limmax" > TC${TESTCASE}_XY_lim.dat
-echo "$submin $submax" > TC${TESTCASE}_XY_sub.dat
+echo "$idx" > TC${TESTCASE}_${GRID}_idx.dat
+echo "$limmin $limmax" > TC${TESTCASE}_${GRID}_lim.dat
+echo "$submin $submax" > TC${TESTCASE}_${GRID}_sub.dat
 
 echo "*********************************************************"
 echo "Running finite-volume cases (DCU)"
@@ -88,12 +88,16 @@ do
       echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
       exit
     else
-      mv TC${TESTCASE}_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_err.dat
-      mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
-      mv TC${TESTCASE}_Sub${SUBCASE}_St1_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_sol.dat
-      mv TC${TESTCASE}_Sub${SUBCASE}_St2_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_sol.dat
-     grep solver Ash3d.lst cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
-      rm 3d_tephra_fall*dat
+      echo "Backing up output files"
+      mv TC${TESTCASE}_Sub${SUBCASE}_St1_err.dat DATA/TC${TESTCASE}_${GRID}_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_err.dat
+      mv TC${TESTCASE}_Sub${SUBCASE}_St2_err.dat DATA/TC${TESTCASE}_${GRID}_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_err.dat
+      mv TC${TESTCASE}_Sub${SUBCASE}_St1_sol.dat DATA/TC${TESTCASE}_${GRID}_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St1_sol.dat
+      mv TC${TESTCASE}_Sub${SUBCASE}_St2_sol.dat DATA/TC${TESTCASE}_${GRID}_Sub${SUBCASE}_${nlim_label[il]}_${dx[k]}_St2_sol.dat
+      if [ $k -eq 0 ]; then
+        rm -f DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_etime.dat
+      fi
+      grep solver Ash3d.lst | cut -c 35-48 >> DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_etime.dat
+      rm -f 3d_tephra_fall*dat Ash3d.lst progress.txt
    fi
    echo "-------------------------------------------------------------------------"
    echo "-------------------------------------------------------------------------"

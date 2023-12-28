@@ -1290,9 +1290,9 @@
         enddo ! loop over k
       enddo ! loop over n
 
-      do io=1,2;if(VB(io).le.verbosity_info)then
-        write(outlog(io),*)"Total mass = ",total_mass,dt
-      endif;enddo
+      !do io=1,2;if(VB(io).le.verbosity_info)then
+      !  write(outlog(io),*)"Total mass = ",total_mass,dt
+      !endif;enddo
 
       end subroutine DistSource
 
@@ -2172,7 +2172,8 @@
       function MMS_Source(x,y,z,t,velx,vely,velz,vels,dws_dz)
 
       use global_param, only : &
-        MPS_2_KMPHR,MPS_2_KMPHR,KM_2_M,HR_2_S,KM3_2_M3
+        MPS_2_KMPHR,MPS_2_KMPHR,KM_2_M,HR_2_S,KM3_2_M3,&
+        useDiffusion,useVarDiffH,useVarDiffV
 
       use Diffusion,    only : &
         diffusivity_horz
@@ -2276,11 +2277,14 @@
       if(.not.MMS_USE_Z)Dq_dz = 0.0_ip
       if(.not.MMS_USE_Z)Dq_dt = 0.0_ip
       if(.not.MMS_USE_T)Dq_dt = 0.0_ip
-      !if(.not.MMS_USE_DIFF)then
-      !  D2q_dx2 = 0.0_ip
-      !  D2q_dy2 = 0.0_ip
-      !  D2q_dz2 = 0.0_ip
-      !endif
+      if(.not.MMS_USE_DIFF)then
+        useDiffusion = .false.
+        useVarDiffH  = .false.
+        useVarDiffV  = .false.
+        D2q_dx2 = 0.0_ip
+        D2q_dy2 = 0.0_ip
+        D2q_dz2 = 0.0_ip
+      endif
 
       ! Assemble source term in kg/m3/s
       MMS_Source = 0.0_ip

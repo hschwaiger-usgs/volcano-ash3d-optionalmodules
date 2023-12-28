@@ -29,7 +29,7 @@ TESTCASE=4
 export TESTCASE
 ASH3DCFL=0.80
 export ASH3DCFL
-
+GRID=XY
 # Subcases
 sub=(0 1 2 3 4 5 6)
 # Diffusion
@@ -52,8 +52,8 @@ dx=(50000 25000 12500 06250 03125)
 submin=1
 submax=6
 
-echo "$idx" > TC${TESTCASE}_XY_idx.dat
-echo "$submin $submax" > TC${TESTCASE}_XY_sub.dat
+echo "$idx" > TC${TESTCASE}_${GRID}_idx.dat
+echo "$submin $submax" > TC${TESTCASE}_${GRID}_sub.dat
 
 echo "*********************************************************"
 echo "Running finite-volume cases (Diffusion)"
@@ -87,16 +87,22 @@ do
   status=$?
   if [ $status -ne 0 ]; then
      echo "ERROR with job ${is}/${il}/${k} : ${SUBCASE} ${LIMITER} ${dx[k]} with code=$status"
-     #exit
+     exit
    else
     cp Ash3d.lst Ash3d_Sub${sub[is]}_${dx[k]}.lst
-    mv 3d_tephra_fall_2010041400.00.dat DATA/TC${TESTCASE}_XY_Sub${sub[is]}_${dx[k]}_1.dat
-    mv 3d_tephra_fall_2010041400.01.dat DATA/TC${TESTCASE}_XY_Sub${sub[is]}_${dx[k]}_2.dat
-    mv 3d_tephra_fall_2010041400.10.dat DATA/TC${TESTCASE}_XY_Sub${sub[is]}_${dx[k]}_3.dat
-    mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${dx[k]}_err.dat
-    mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_XY_Sub${SUBCASE}_${dx[k]}_sol.dat
-     grep solver Ash3d.lst cut -c 35-48 >> DATA/TC${TESTCASE}_XY_${nlim_label[il]}_etime.dat
+    mv 3d_tephra_fall_2010041400.00.dat DATA/TC${TESTCASE}_${GRID}_Sub${sub[is]}_${dx[k]}_1.dat
+    mv 3d_tephra_fall_2010041400.01.dat DATA/TC${TESTCASE}_${GRID}_Sub${sub[is]}_${dx[k]}_2.dat
+    mv 3d_tephra_fall_2010041400.10.dat DATA/TC${TESTCASE}_${GRID}_Sub${sub[is]}_${dx[k]}_3.dat
+    mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_${GRID}_Sub${SUBCASE}_${dx[k]}_err.dat
+    mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_${GRID}_Sub${SUBCASE}_${dx[k]}_sol.dat
+    if [ $k -eq 0 ]; then
+      rm -f DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_etime.dat
+    fi
+    grep solver Ash3d.lst | cut -c 35-48 >> DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_etime.dat
+     rm -f Ash3d.lst progress.txt
   fi
+  echo "-------------------------------------------------------------------------"
+  echo "-------------------------------------------------------------------------"
+  echo "-------------------------------------------------------------------------"
  done
 done
-
