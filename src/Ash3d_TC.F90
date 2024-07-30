@@ -336,7 +336,8 @@
 #ifdef TESTCASES
         call set_TestCase_windfield
         call Adjust_DT(.false.)
-        ! Log the initial dt for test cases.  We need this for TC5
+        ! Log the initial dt for test cases.  We need this for TC5 where the
+        ! wind speed drops to zero, then reverses
         dt_TC = dt
 #endif
 !------------------------------------------------------------------------------
@@ -418,7 +419,7 @@
 #ifdef TESTCASES
         call set_TestCase_windfield
         call Adjust_DT(.false.)
-        dt = dt_TC
+        dt = min(dt_TC,dt)
         if(TestCase.eq.6)then
           call DistSource
         endif
