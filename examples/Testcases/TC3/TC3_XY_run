@@ -19,7 +19,7 @@ if [ -z ${idx+x} ]; then echo "Setting idx to 3"; idx=3; else echo "idx is set t
 
 #  Uncomment here if you want to over-ride these values
 # idx=1
-# limmax=4
+# limmax=1
 
 ASH3DROOT="../../.."
 WRKDIR="${ASH3DROOT}/src"
@@ -72,8 +72,8 @@ do
      exit
    else
       echo "Backing up output files"
-     mv TC${TESTCASE}_err.dat DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_${dx[k]}_err.dat
-     mv TC${TESTCASE}_sol.dat DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_${dx[k]}_sol.dat
+     mv TC${TESTCASE}_${GRID}_err.dat DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_${dx[k]}_err.dat
+     mv TC${TESTCASE}_${GRID}_sol.dat DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_${dx[k]}_sol.dat
      if [ $k -eq 0 ]; then
        rm -f DATA/TC${TESTCASE}_${GRID}_${nlim_label[il]}_etime.dat
      fi

@@ -1607,11 +1607,11 @@
         L2_toterror = sqrt(L2_toterror) / TotalVol
         MassConsError = abs((MassConsError-total_mass)/total_mass)
         if(time.lt.0.6)then
-          write(ofile1,'(a7,i1,a12)')'TC1_Sub',SubCase,'_St1_err.dat'
-          write(ofile2,'(a7,i1,a12)')'TC1_Sub',SubCase,'_St1_sol.dat'
+          write(ofile1,'(a10,i1,a12)')'TC1_XY_Sub',SubCase,'_St1_err.dat'
+          write(ofile2,'(a10,i1,a12)')'TC1_XY_Sub',SubCase,'_St1_sol.dat'
         else
-          write(ofile1,'(a7,i1,a12)')'TC1_Sub',SubCase,'_St2_err.dat'
-          write(ofile2,'(a7,i1,a12)')'TC1_Sub',SubCase,'_St2_sol.dat'
+          write(ofile1,'(a10,i1,a12)')'TC1_XY_Sub',SubCase,'_St2_err.dat'
+          write(ofile2,'(a10,i1,a12)')'TC1_XY_Sub',SubCase,'_St2_sol.dat'
         endif
         open(200,file=ofile1,status='replace')
         open(201,file=ofile2,status='replace')
@@ -1797,8 +1797,8 @@
           L2_toterror = L2_toterror /  nsmax
           L2_toterror = sqrt(L2_toterror) / TotalVol
           MassConsError = abs((MassConsError-total_mass)/total_mass)
-          write(ofile1,'(a11)')'TC3_err.dat'
-          write(ofile2,'(a11)')'TC3_sol.dat'
+          write(ofile1,'(a14)')'TC3_XY_err.dat'
+          write(ofile2,'(a14)')'TC3_XY_sol.dat'
           open(200,file=ofile1,status='replace')
           open(201,file=ofile2,status='replace')
           write(200,*)L1_toterror,L2_toterror,MassConsError

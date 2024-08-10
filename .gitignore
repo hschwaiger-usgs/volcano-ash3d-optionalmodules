@@ -1,2 +1,6 @@
 src/*.o
 src/*.mod
+src/Ash3d_version.h
+src/installpath.h
+examples/Testcases/TC*/DATA/TC*.dat
+examples/Testcases/TC*/PLOTS
