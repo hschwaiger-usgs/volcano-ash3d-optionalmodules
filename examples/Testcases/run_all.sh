@@ -13,7 +13,7 @@ fi
 
 # Specify which cases to turn off, by setting the corresponding value to 0
     #  1 2 3 4 5 6
-cases=(0 0 0 0 1 0)
+cases=(1 1 1 1 1 1)
 
 if [ "$[cases[0]]" -ne 0 ]; then
   cd ${TestcasesDir}/TC1
