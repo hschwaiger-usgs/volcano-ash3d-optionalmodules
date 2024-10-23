@@ -47,7 +47,7 @@
     "organization": "U.S. Geological Survey",
     "description": "ash3d-optionalmodules is an example code (written in fortran 90) that illustrates how to create optional modules for Ash3d; in this case, the TestCases module for convergence testing.",
     "version": "1.0.0",
-    "status": "Production
+    "status": "Production",
 
     "permissions": {
       "usageType": "openSource",
