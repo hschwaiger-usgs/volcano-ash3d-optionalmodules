@@ -2,7 +2,7 @@
 !
 !  Ash3d is a program for modeling volcanic ash transport and dispersion.
 !
-!  This software is written in Frotran 2003 and is designed for use on a Linux
+!  This software is written in Fortran 2003 and is designed for use on a Linux
 !  operating system.
 !  
 !  This software, along with auxillary USGS libraries and related repositories,
@@ -17,7 +17,8 @@
 !     deposition, Journal of Geophysical Research, 117, B04204,
 !     doi:10.1029/2011JB008968
 !
-!  A complete user's guide and reference manual is available at
+!  A complete user's guide and reference manual is available at:
+!   https://code.usgs.gov/vsc/ash3d/ash3d_users_guide
 !
 !  The USGS provides a web-interface to this software at:
 !    https://vsc-ash.wr.usgs.gov
@@ -41,7 +42,8 @@
          nmods,OPTMOD_names,StopConditions,CheckConditions      
 
       use mesh,          only : &
-         ivent,jvent,nxmax,nymax,nzmax,nsmax,ts0,ts1,ZPADDING,dz_vec_pd,z_cc_pd
+         ivent,jvent,nxmax,nymax,nzmax,nsmax,ts0,ts1,ZPADDING,dz_vec_pd,&
+         z_cc_pd
 
       use solution,      only : &
          concen_pd,DepositGranularity,StopValue_FracAshDep,aloft_percent_remaining, &
@@ -100,7 +102,7 @@
            AdvectHorz
 
       use AdvectionVert_DCU, only : &
-           advect_z
+           AdvectVert
 
       use Diffusion,     only : &
            DiffuseHorz,&
@@ -113,6 +115,9 @@
       use Ash3d_ASCII_IO,  only : &
            vprofilewriter
 
+      use MetReader,       only : &
+           MR_Set_SigmaAlt_Scaling
+
 #ifdef USENETCDF
       use Ash3d_Netcdf_IO,only : &
            NC_RestartFile_LoadConcen
@@ -122,6 +127,8 @@
 !       OPTIONAL MODULES
 !         Insert 'use' statements here
 !
+      use Topography
+      
 #ifdef TESTCASES
       use TestCases
 #endif
@@ -145,6 +152,8 @@
         end subroutine alloc_arrays
         subroutine calc_mesh_params
         end subroutine calc_mesh_params
+        subroutine calc_s_mesh
+        end subroutine calc_s_mesh
         subroutine MesoInterpolater(TimeNow,Load_MesoSteps,Interval_Frac)
           integer,parameter  :: dp         = 8 ! Double precision
           real(kind=dp),intent(in)    :: TimeNow
@@ -206,12 +215,13 @@
         do io=1,2;if(VB(io).le.verbosity_essential)then
           write(outlog(io),*)"Testing for ",OPTMOD_names(i),i
         endif;enddo
-        !if(OPTMOD_names(i).eq.'RESETPARAMS')then
-        !  do io=1,2;if(VB(io).le.verbosity_essential)then
-        !    write(outlog(io),*)"  Reading input block for RESETPARAMS"
-        !  endif;enddo
-        !  call input_data_ResetParams
-        !endif
+        ! Note that RESETPARAMS is handeled in Input_Data.F90::Read_Control_File()
+        if(OPTMOD_names(i).eq.'TOPO')then
+          do io=1,2;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"  Reading input block for TOPO"
+          endif;enddo
+          call input_data_Topo
+        endif
       enddo
       do io=1,2;if(VB(io).le.verbosity_info)then    
         write(outlog(io),*)"Finished reading all specialized input blocks"
@@ -219,7 +229,7 @@
 !
 !------------------------------------------------------------------------------
 
-        ! Read airports/POI and allocate/initilize arrays
+        ! Read airports/POI and allocate/initialize arrays
         ! We only need to do this if an output variable demands it since this is
         ! a burden every time step
       if(Output_every_TS) &
@@ -228,10 +238,19 @@
       call alloc_arrays
         ! Set up grids for solution and Met data
       call calc_mesh_params
+      if(useTopo)then
+        ! This can only be called after calc_mesh_params since we need
+        ! the horizontal grid to build the topo array
+        call Allocate_Topo(nxmax,nymax)
+        call Get_Topo
+      endif
+      ! Now that we potentially have topography, we can build the s_cc_pd array
+      call calc_s_mesh
 
       if(((SourceType.eq.'umbrella').or.(SourceType.eq.'umbrella_air')))then
         call Allocate_Source_Umbrella(nxmax,nymax,nzmax)
       endif
+
       if(.not.IsCustom_SourceType)then
         call Calc_Normalized_SourceCol
       endif
@@ -346,6 +365,7 @@
 !       OPTIONAL MODULES
 !         Insert calls to prep user-specified output
 !
+      if(useTopo) call Prep_output_Topo
 !------------------------------------------------------------------------------
 
         ! Call output_results before time loop to create output files
@@ -412,6 +432,9 @@
 !        call MesoInterpolater(time , Load_MesoSteps , Interval_Frac)
 !****
 !****
+
+        if(useTopo) call Calc_Vmod_Topo
+
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES
 !         Insert calls to special MesoInterpolaters subroutines here
@@ -530,7 +553,7 @@
 
         if(useHorzAdvect) call AdvectHorz(itime)
 
-        if(useVertAdvect) call advect_z
+        if(useVertAdvect) call AdvectVert
 
         if(useDiffusion)then
           call Set_BC(2)
@@ -559,7 +582,7 @@
 
 !------------------------------------------------------------------------------
 !       OPTIONAL MODULES
-!         Insert calls output routines (every timestep) here
+!         Insert calls output routines (every time step) here
 !
 !------------------------------------------------------------------------------
 
@@ -804,7 +827,7 @@
              /,5x,'Area covered by >0.01 mm (km2)   = ',f10.1,/)
 5012  format(4x,'*=files written out')
 
-5020  format('Calculating fall time from plume top',/,&
+5020  format('Calculating fall time from plume top to z=0',/,&
               5x,'GS index',5x,'diam (mm)',5x,'fall time (hours)')
 5021  format(5x,i4,7x,f8.3,10x,f15.1)
 
@@ -820,6 +843,7 @@
 !       OPTIONAL MODULES
 !         Insert calls deallocation routines here
 !
+      if(useTopo)                     call Deallocate_Topo
 !------------------------------------------------------------------------------
 
       close(fid_logfile)       !close log file 
