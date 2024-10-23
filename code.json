@@ -1,0 +1,88 @@
+[
+  {
+    "name": "ash3d-optionalmodules",
+    "organization": "U.S. Geological Survey",
+    "description": "ash3d-optionalmodules is an example code (written in fortran 90) that illustrates how to create optional modules for Ash3d; in this case, the TestCases module for convergence testing.",
+    "version": "master",
+    "status": "Development",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules/-/raw/master/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules/",
+    "downloadURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules/-/archive/master/volcano-ash3d-optionalmodules-master.zip",
+    "disclaimerURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules/-/raw/master/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules.git",
+    "vcs": "git",
+
+    "laborHours": 0,
+
+    "tags": [
+      "USGS",
+      "Ash3d"
+    ],
+
+    "languages": [
+      "fortran"
+    ],
+
+    "contact": {
+      "name": "Hans F. Schwaiger",
+      "email": "hschwaiger@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2024-10-22"
+    }
+  },
+  {
+    "name": "ash3d-optionalmodules",
+    "organization": "U.S. Geological Survey",
+    "description": "ash3d-optionalmodules is an example code (written in fortran 90) that illustrates how to create optional modules for Ash3d; in this case, the TestCases module for convergence testing.",
+    "version": "1.0.0",
+    "status": "Production",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules/-/raw/1.0.0/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules/",
+    "downloadURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules/-/archive/1.0.0/volcano-ash3d-optionalmodules-1.0.0.zip",
+    "disclaimerURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules/-/raw/1.0.0/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-optionalmodules.git",
+    "vcs": "git",
+
+    "laborHours": 0,
+
+    "tags": [
+      "USGS",
+      "Ash3d"
+    ],
+
+    "languages": [
+      "fortran"
+    ],
+
+    "contact": {
+      "name": "Hans F. Schwaiger",
+      "email": "hschwaiger@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2024-10-22"
+    }
+  }
+]
