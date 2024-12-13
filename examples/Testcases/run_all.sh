@@ -1,6 +1,6 @@
 #!/bin/bash
 TestcasesDir=`pwd`
-il=1 # 0-6: 0 is just no-limiter, 1 is NO and Superbee, 6 is all
+il=1 # 0-6: 0 is just no-limiter, 1 is NO and Superbee, 6 is all (limiters only apply to advection)
 ix=3 # 1-5: 5 is the max prepared but that takes overnight
 
 rc=0
@@ -11,7 +11,13 @@ if [[ "$rc" -gt 0 ]] ; then
   exit
 fi
 
-# Specify which cases to turn off, by setting the corresponding value to 0
+# Specify which cases to turn on/off, by setting the corresponding value to 1/0
+    #  Case 1 : Horizontal advection
+    #  Case 2 : Vertical advection
+    #  Case 3 : Horizontal Rigid Rotation (Cone/block)
+    #  Case 4 : Diffusion
+    #  Case 5 : Horizontal Shear Rotation
+    #  Case 6 : Method of Manufactured Solutions
     #  1 2 3 4 5 6
 cases=(1 1 1 1 1 1)
 
