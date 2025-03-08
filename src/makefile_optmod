@@ -63,10 +63,10 @@ OS = LINUX
 USGSROOT=/opt/USGS
 
 # This is the location of the Ash3d core code source files that we will build this
-# research branch with.
+# test branch with.
 ASH3DCCSRC=~/work/USGS/Software/GIT/volcano-ash3d/src
 
-INSTALLDIR=/opt/USGS/Ash3d
+INSTALLDIR=$(USGSROOT)/Ash3d
 
 # DATA FORMATS
 #  For each data format you want to include in the library, set the corresponding
@@ -361,6 +361,7 @@ write_ASCII.o            \
 write_BINARY.o           \
 write_KML.o              \
 Topography.o             \
+Diffusivity_Variable.o   \
 ResetParams.o
 
 ifeq ($(USENETCDF), T)
@@ -377,20 +378,23 @@ Ash3d_TC: $(OBJECTS) $(DATAOBJ) $(OPTMODS_OBJ) Ash3d_TC.F90 $(MFILE) $(SYSINC)
 # Objects/Modules for initilization and model set-up
 Ash3d_VariableModules.o: $(ASH3DCCSRC)/Ash3d_VariableModules.f90 $(MFILE) $(SYSINC)
 	bash $(ASH3DCCSRC)/get_version.sh
+	echo "        Ash3dHome = '$(INSTALLDIR)'" > installpath.h
+	echo "        zippath = $(zippath)" > zippath.h
+	echo "        gnuplotpath = $(gnuplotpath)" > gnuplotpath.h
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3DCCSRC)/Ash3d_VariableModules.f90
-Input_Data.o: $(ASH3DCCSRC)/Input_Data.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o Help.o Tephra.o VotW.o Diffusion.o Airports.o $(DATAOBJ) Output_Vars.o Source.o Source_Umbrella.o ResetParams.o
+Input_Data.o: $(ASH3DCCSRC)/Input_Data.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o Help.o Tephra.o VotW.o Diffusion.o Airports.o $(DATAOBJ) Output_Vars.o Source.o Source_Umbrella.o ResetParams.o Diffusivity_Variable.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3DCCSRC)/Input_Data.f90
-ResetParams.o: $(ASH3DCCSRC)/ResetParams.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o Tephra.o Output_Vars.o Source_Umbrella.o
+ResetParams.o: $(ASH3DCCSRC)/ResetParams.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o Tephra.o Output_Vars.o Source_Umbrella.o Diffusion.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3DCCSRC)/ResetParams.f90
 Topography.o: $(ASH3DCCSRC)/Topography.f90 $(MFILE) Ash3d_VariableModules.o Output_Vars.o Tephra.o Calc_Mesh.o $(DATAOBJ) write_BINARY.o write_ASCII.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3DCCSRC)/Topography.f90
+Diffusivity_Variable.o: $(ASH3DCCSRC)/Diffusivity_Variable.f90 $(MFILE) Ash3d_VariableModules.o Output_Vars.o Tephra.o Diffusion.o Atmosphere.o
+	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3DCCSRC)/Diffusivity_Variable.f90
 Help.o: $(ASH3DCCSRC)/Help.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) -c $(ASH3DCCSRC)/Help.f90
 VotW.o: $(ASH3DCCSRC)/VotW.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o Source.o
-	echo "        Ash3dHome = '$(INSTALLDIR)'" > installpath.h
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3DCCSRC)/VotW.f90
 Airports.o: $(ASH3DCCSRC)/Airports.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o 
-	echo "        Ash3dHome = '$(INSTALLDIR)'" > installpath.h
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3DCCSRC)/Airports.f90
 Calc_Mesh.o: $(ASH3DCCSRC)/Calc_Mesh.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o Output_Vars.o
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) -c $(ASH3DCCSRC)/Calc_Mesh.f90
@@ -417,7 +421,7 @@ MesoInterpolater.o: $(ASH3DCCSRC)/MesoInterpolater.f90 $(MFILE) $(SYSINC) Ash3d_
 # PDE Solver (Advection, Diffusion, B.C.'s)
 AdvectionHorz.o: $(ASH3DCCSRC)/AdvectionHorz.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o AdvectionHorz_DCU.o
 	$(FC) $(FPPFLAGS) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) -c $(ASH3DCCSRC)/AdvectionHorz.f90
-AdvectionHorz_DCU.o: $(ASH3DCCSRC)/AdvectionHorz_DCU.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o
+AdvectionHorz_DCU.o: $(ASH3DCCSRC)/AdvectionHorz_DCU.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o Topography.o
 	$(FC) $(FPPFLAGS) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) -c $(ASH3DCCSRC)/AdvectionHorz_DCU.f90
 AdvectionVert_DCU.o: $(ASH3DCCSRC)/AdvectionVert_DCU.f90 $(MFILE) $(SYSINC) Ash3d_VariableModules.o
 	$(FC) $(FPPFLAGS) $(OPTMODS_FPP) $(FFLAGS) $(EXFLAGS) -c $(ASH3DCCSRC)/AdvectionVert_DCU.f90

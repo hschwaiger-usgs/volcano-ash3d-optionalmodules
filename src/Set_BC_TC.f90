@@ -40,7 +40,7 @@
         !------------------------------------------------------------------------
         ! Use zero-order extrapolation for all velocities (i.e. constant
         ! values extrapolation from edge cell to ghost cells).  This is
-        ! important to supress any effects from the \Delta u terms of
+        ! important to suppress any effects from the \Delta u terms of
         ! advection.  A linear extrapolation might seem better, but this
         ! could allow a non-physical inflow.
         if(IsPeriodic)then

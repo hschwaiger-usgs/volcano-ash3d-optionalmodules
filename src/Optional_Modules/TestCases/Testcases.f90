@@ -771,7 +771,7 @@
 !    lon_pole,lat_pole,omega
 !    ve_out,vn_out
 !
-!  This subroutine takes a point in spherical coordinates (lon,lat,altiture),
+!  This subroutine takes a point in spherical coordinates (lon,lat,altitude),
 !  along with a pole of rotation + rotation rate, and returns the ve and vn
 !  components of velocity at that point for the given rigid-body rotation.
 !
